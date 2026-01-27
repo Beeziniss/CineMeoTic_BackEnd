@@ -1,5 +1,5 @@
 <Solution>
-  <Project Path="CineMeoTic.ApiService/CineMeoTic.ApiService.csproj" />
   <Project Path="CineMeoTic.AppHost/CineMeoTic.AppHost.csproj" />
+  <Project Path="CineMeoTic.Authentication/CineMeoTic.AuthenticationService.csproj" />
   <Project Path="CineMeoTic.ServiceDefaults/CineMeoTic.ServiceDefaults.csproj" />
 </Solution>
