@@ -1,5 +1,6 @@
 <Solution>
   <Project Path="CineMeoTic.AppHost/CineMeoTic.AppHost.csproj" />
-  <Project Path="CineMeoTic.Authentication/CineMeoTic.AuthenticationService.csproj" />
+  <Project Path="CineMeoTic.Common/CineMeoTic.Common.csproj" Id="2828dc95-4b81-4238-a786-822f8b3db583" />
   <Project Path="CineMeoTic.ServiceDefaults/CineMeoTic.ServiceDefaults.csproj" />
+  <Project Path="CineMeoTic.UserService.API/CineMeoTic.UserService.API.csproj" />
 </Solution>

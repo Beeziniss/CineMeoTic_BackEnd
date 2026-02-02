@@ -1,4 +1,4 @@
-﻿var builder = DistributedApplication.CreateBuilder(args);
+var builder = DistributedApplication.CreateBuilder(args);
 
 //var cache = builder.AddRedis("cache");
 
@@ -42,6 +42,33 @@ builder.AddProject<Projects.CineMeoTic_AuthenticationService>("authentication-se
        //.WithReference(userDb)
        //.WaitFor(userDb)
        .WithHttpHealthCheck("/health");
+
+
+
+//var apiService = builder.AddProject<Projects.CineMeoTic_ApiService>("apiservice")
+//    .WithHttpHealthCheck("/health");
+
+//builder.AddProject<Projects.CineMeoTic_Web>("webfrontend")
+//    .WithExternalHttpEndpoints()
+//    .WithHttpHealthCheck("/health")
+//    .WithReference(cache)
+//    .WaitFor(cache)
+//    .WithReference(apiService)
+//    .WaitFor(apiService);
+
+
+//var apiService = builder.AddProject<Projects.CineMeoTic_ApiService>("apiservice")
+//    .WithHttpHealthCheck("/health");
+
+//builder.AddProject<Projects.CineMeoTic_Web>("webfrontend")
+//    .WithExternalHttpEndpoints()
+//    .WithHttpHealthCheck("/health")
+//    .WithReference(cache)
+//    .WaitFor(cache)
+//    .WithReference(apiService)
+//    .WaitFor(apiService);
+
+builder.AddProject<Projects.CineMeoTic_UserService_API>("cinemeotic-userservice-api");
 
 
 

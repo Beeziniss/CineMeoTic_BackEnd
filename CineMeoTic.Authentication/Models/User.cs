@@ -1,6 +1,6 @@
-﻿namespace CineMeoTic.AuthenticationService.Models
+﻿namespace CineMeoTic.AuthenticationService.Models;
+
+public sealed class User
 {
-    public class User
-    {
-    }
+
 }

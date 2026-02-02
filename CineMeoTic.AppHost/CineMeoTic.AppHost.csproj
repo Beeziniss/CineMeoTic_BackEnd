@@ -18,7 +18,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\CineMeoTic.Authentication\CineMeoTic.AuthenticationService.csproj" />
+    <ProjectReference Include="..\CineMeoTic.UserService.API\CineMeoTic.UserService.API.csproj" />
   </ItemGroup>
 
 </Project>
