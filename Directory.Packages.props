@@ -1,0 +1,31 @@
+<Project>
+  <PropertyGroup>
+    <ManagePackageVersionsCentrally>true</ManagePackageVersionsCentrally>
+    <NoWarn>$(NoWarn);NU1010</NoWarn>
+  </PropertyGroup>
+  <ItemGroup>
+    <PackageVersion Include="Aspire.Hosting.AppHost" Version="13.1.0" />
+    <PackageVersion Include="Aspire.Hosting.PostgreSQL" Version="13.1.0" />
+    <PackageVersion Include="Aspire.Hosting.RabbitMQ" Version="13.1.0" />
+    <PackageVersion Include="Aspire.Hosting.Redis" Version="13.1.0" />
+    <PackageVersion Include="FluentValidation" Version="12.1.1" />
+    <PackageVersion Include="MediatR" Version="14.0.0" />
+    <PackageVersion Include="Microsoft.AspNetCore.Diagnostics" Version="2.3.9" />
+    <PackageVersion Include="Microsoft.AspNetCore.Http" Version="2.3.9" />
+    <PackageVersion Include="Microsoft.AspNetCore.Mvc" Version="2.3.9" />
+    <PackageVersion Include="Microsoft.Extensions.Http.Resilience" Version="10.2.0" />
+    <PackageVersion Include="Microsoft.Extensions.ServiceDiscovery" Version="10.2.0" />
+    <PackageVersion Include="Newtonsoft.Json" Version="13.0.4" />
+    <PackageVersion Include="OpenTelemetry.Exporter.OpenTelemetryProtocol" Version="1.12.0" />
+    <PackageVersion Include="OpenTelemetry.Extensions.Hosting" Version="1.12.0" />
+    <PackageVersion Include="OpenTelemetry.Instrumentation.AspNetCore" Version="1.12.0" />
+    <PackageVersion Include="OpenTelemetry.Instrumentation.Http" Version="1.12.0" />
+    <PackageVersion Include="OpenTelemetry.Instrumentation.Runtime" Version="1.12.0" />
+    <PackageVersion Include="Microsoft.AspNetCore.Authentication.Google" Version="10.0.2" />
+    <PackageVersion Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="10.0.2" />
+    <PackageVersion Include="Microsoft.AspNetCore.OpenApi" Version="10.0.1" />
+    <PackageVersion Include="SonarAnalyzer.CSharp" Version="10.19.0.132793" />
+	<PackageVersion Include="Microsoft.AspNetCore.App" Version="2.2.8" />
+	<PackageVersion Include="Microsoft.AspNetCore.Http" Version="2.3.9" />
+  </ItemGroup>
+</Project>

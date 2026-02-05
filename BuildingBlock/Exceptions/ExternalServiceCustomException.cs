@@ -1,4 +1,4 @@
-﻿namespace CineMeoTic.Common.Exceptions;
+﻿namespace BuildingBlocks.Exceptions;
 
 public sealed class ExternalServiceCustomException(string message) : BaseException(message)
 {

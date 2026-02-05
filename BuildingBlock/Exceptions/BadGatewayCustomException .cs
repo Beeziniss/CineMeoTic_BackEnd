@@ -1,6 +1,4 @@
-﻿using CineMeoTic.Common.Exceptions;
-
-namespace EkofyApp.Domain.Exceptions;
+﻿namespace BuildingBlocks.Exceptions;
 
 public sealed class BadGatewayCustomException(string message) : BaseException(message)
 {

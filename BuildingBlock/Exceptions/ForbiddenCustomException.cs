@@ -1,4 +1,4 @@
-﻿namespace CineMeoTic.Common.Exceptions;
+﻿namespace BuildingBlocks.Exceptions;
 
 public sealed class ForbiddenCustomException(string message) : BaseException(message)
 {

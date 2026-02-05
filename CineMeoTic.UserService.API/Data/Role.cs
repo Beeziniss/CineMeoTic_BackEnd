@@ -1,6 +1,6 @@
 ﻿using CineMeoTic.Common.Models;
 
-namespace CineMeoTic.UserService.API.Models;
+namespace CineMeoTic.UserService.API.Data;
 
 public sealed class Role : Auditable
 {

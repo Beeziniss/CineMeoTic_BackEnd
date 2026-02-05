@@ -1,3 +1,4 @@
+using BuildingBlocks.Exceptions.Handler;
 using CineMeoTic.UserService.API.Middlewares;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -10,6 +11,8 @@ builder.Services.AddControllers();
 // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
 builder.Services.AddOpenApi();
 
+builder.Services.AddExceptionHandler<CustomExceptionHandler>();
+
 var app = builder.Build();
 
 app.MapDefaultEndpoints();
@@ -18,6 +21,7 @@ app.MapDefaultEndpoints();
 if (app.Environment.IsDevelopment())
 {
     app.MapOpenApi();
+    app.UseExceptionHandler("/Error");
 }
 
 app.UseHttpsRedirection();

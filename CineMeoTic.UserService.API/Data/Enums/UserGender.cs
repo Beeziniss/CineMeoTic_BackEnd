@@ -1,4 +1,4 @@
-﻿namespace CineMeoTic.UserService.API.Models.Enums;
+﻿namespace CineMeoTic.UserService.API.Data.Enums;
 
 public enum UserGender
 {

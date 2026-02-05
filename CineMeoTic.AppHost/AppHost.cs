@@ -1,4 +1,4 @@
-var builder = DistributedApplication.CreateBuilder(args);
+IDistributedApplicationBuilder builder = DistributedApplication.CreateBuilder(args);
 
 //var cache = builder.AddRedis("cache");
 
@@ -38,10 +38,10 @@ var builder = DistributedApplication.CreateBuilder(args);
 //    .WithReference(apiService)
 //    .WaitFor(apiService);
 
-builder.AddProject<Projects.CineMeoTic_AuthenticationService>("authentication-service")
-       //.WithReference(userDb)
-       //.WaitFor(userDb)
-       .WithHttpHealthCheck("/health");
+//builder.AddProject<Projects.CineMeoTic_AuthenticationService>("authentication-service")
+//       //.WithReference(userDb)
+//       //.WaitFor(userDb)
+//       .WithHttpHealthCheck("/health");
 
 
 

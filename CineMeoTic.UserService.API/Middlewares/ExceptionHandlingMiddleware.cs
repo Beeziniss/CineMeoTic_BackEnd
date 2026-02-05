@@ -1,6 +1,6 @@
 ﻿using System.Net;
 using System.Text.Json;
-using CineMeoTic.Common.Exceptions;
+using BuildingBlocks.Exceptions;
 using CineMeoTic.Common.Utils;
 
 namespace CineMeoTic.UserService.API.Middlewares;

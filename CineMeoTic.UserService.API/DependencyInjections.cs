@@ -1,4 +1,4 @@
-﻿using CineMeoTic.Common.Exceptions;
+﻿using BuildingBlocks.Exceptions;
 using CineMeoTic.UserService.API.Middlewares;
 using Microsoft.AspNetCore.Authentication.Google;
 using Microsoft.AspNetCore.Authentication.JwtBearer;

@@ -1,4 +1,4 @@
-﻿namespace CineMeoTic.Common.Exceptions;
+﻿namespace BuildingBlocks.Exceptions;
 
 public class ConflictCustomException(string message) : BaseException(message)
 {

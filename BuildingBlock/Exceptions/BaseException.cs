@@ -1,4 +1,4 @@
-﻿namespace CineMeoTic.Common.Exceptions;
+﻿namespace BuildingBlocks.Exceptions;
 
 public class BaseException(string message) : Exception(message)
 {

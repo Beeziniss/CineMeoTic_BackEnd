@@ -1,6 +1,4 @@
-﻿using CineMeoTic.Common.Exceptions;
-
-namespace CineMeoTic.Common.Exceptions;
+﻿namespace BuildingBlocks.Exceptions;
 
 public sealed class UnprocessableEntityCustomException(string message) : BaseException(message)
 {

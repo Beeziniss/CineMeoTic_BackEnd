@@ -1,7 +1,7 @@
 ﻿using CineMeoTic.Common.Models;
-using CineMeoTic.UserService.API.Models.Enums;
+using CineMeoTic.UserService.API.Data.Enums;
 
-namespace CineMeoTic.UserService.API.Models;
+namespace CineMeoTic.UserService.API.Data;
 
 public sealed class User : Auditable
 {

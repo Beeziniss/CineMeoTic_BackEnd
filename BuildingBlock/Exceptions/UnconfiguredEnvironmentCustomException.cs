@@ -1,6 +1,4 @@
-﻿using CineMeoTic.Common.Exceptions;
-
-namespace CineMeoTic.Common.Exceptions;
+﻿namespace BuildingBlocks.Exceptions;
 public class UnconfiguredEnvironmentCustomException(string message) : BaseException(message)
 {
     public override int StatusCode => 504; // Default status code for server errors
