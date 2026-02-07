@@ -7,6 +7,9 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="BCrypt.Net-Next" />
+    <PackageReference Include="Mapster" />
+    <PackageReference Include="Mapster.DependencyInjection" />
     <PackageReference Include="Microsoft.AspNetCore.Authentication.Google" />
     <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" />
     <PackageReference Include="Microsoft.AspNetCore.OpenApi" />
@@ -16,11 +19,6 @@
     <ProjectReference Include="..\BuildingBlock\BuildingBlocks.csproj" />
     <ProjectReference Include="..\CineMeoTic.Common\CineMeoTic.Common.csproj" />
     <ProjectReference Include="..\CineMeoTic.ServiceDefaults\CineMeoTic.ServiceDefaults.csproj" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <Folder Include="Models\" />
-    <Folder Include="Services\" />
   </ItemGroup>
 
 </Project>
