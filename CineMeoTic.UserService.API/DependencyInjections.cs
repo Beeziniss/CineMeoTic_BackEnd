@@ -1,5 +1,6 @@
 ﻿using BuildingBlocks.Exceptions;
-using CineMeoTic.UserService.API.Middlewares;
+using Mapster;
+using MapsterMapper;
 using Microsoft.AspNetCore.Authentication.Google;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
@@ -12,10 +13,22 @@ public static class DependencyInjections
 {
     public static void AddDependencyInjections(this IServiceCollection services)
     {
+        services.MapsterExtension();
         services.AddHttpContextAccessor();
         services.AddAuthenticationExtension();
         services.AddAuthorizationExtension();
         services.AddCorsExtension();
+    }
+
+    public static void MapsterExtension(this IServiceCollection services)
+    {
+        services.AddSingleton(provider =>
+        {
+            TypeAdapterConfig config = TypeAdapterConfig.GlobalSettings;
+            config.Scan(typeof(DependencyInjections).Assembly);
+            return config;
+        });
+        services.AddScoped<IMapper, ServiceMapper>();
     }
 
     public static void AddAuthenticationExtension(this IServiceCollection services)
@@ -27,8 +40,8 @@ public static class DependencyInjections
             options.DefaultChallengeScheme = GoogleDefaults.AuthenticationScheme;
         }).AddGoogle(googleOptions =>
         {
-            googleOptions.ClientId = Environment.GetEnvironmentVariable("Authentication_Google_ClientId") ?? throw new Exception("Google's ClientId property is not set in environment or not found");
-            googleOptions.ClientSecret = Environment.GetEnvironmentVariable("Authentication_Google_ClientSecret") ?? throw new Exception("Google's Client Secret property is not set in environment or not found");
+            googleOptions.ClientId = Environment.GetEnvironmentVariable("Authentication_Google_ClientId") ?? throw new UnconfiguredEnvironmentCustomException("Google's ClientId property is not set in environment or not found");
+            googleOptions.ClientSecret = Environment.GetEnvironmentVariable("Authentication_Google_ClientSecret") ?? throw new UnconfiguredEnvironmentCustomException("Google's Client Secret property is not set in environment or not found");
 
         }).AddJwtBearer(opt =>
         {

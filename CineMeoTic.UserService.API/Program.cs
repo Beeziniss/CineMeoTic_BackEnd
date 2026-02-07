@@ -1,5 +1,6 @@
 using BuildingBlocks.Exceptions.Handler;
 using Carter;
+using CineMeoTic.UserService.API;
 using CineMeoTic.UserService.API.Middlewares;
 using CineMeoTic.UserService.API.Services;
 using dotenv.net;
@@ -23,6 +24,8 @@ builder.Services.AddMarten(options =>
 builder.Services.AddCarter();
 
 builder.Services.AddScoped<IJsonWebTokenService, JsonWebTokenService>();
+// Add services to the container.
+builder.Services.AddDependencyInjections();
 
 builder.Services.AddControllers();
 // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi

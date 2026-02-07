@@ -13,6 +13,10 @@
     <PackageVersion Include="dotenv.net" Version="4.0.0" />
     <PackageVersion Include="FluentValidation" Version="12.1.1" />
     <PackageVersion Include="Marten" Version="8.20.0" />
+    <PackageVersion Include="BCrypt.Net-Next" Version="4.0.3" />
+    <PackageVersion Include="FluentValidation" Version="12.1.1" />
+    <PackageVersion Include="Mapster" Version="7.4.0" />
+    <PackageVersion Include="Mapster.DependencyInjection" Version="1.0.1" />
     <PackageVersion Include="MediatR" Version="14.0.0" />
     <PackageVersion Include="Microsoft.AspNetCore.Diagnostics" Version="2.3.9" />
     <PackageVersion Include="Microsoft.AspNetCore.Http" Version="2.3.9" />
