@@ -1,11 +1,12 @@
 ﻿using CineMeoTic.Common.Utils;
 using CineMeoTic.UserService.API.Data;
 using CineMeoTic.UserService.API.Models;
+using CineMeoTic.UserService.API.Services.Intefaces;
 using MapsterMapper;
 
-namespace CineMeoTic.UserService.API.Services;
+namespace CineMeoTic.UserService.API.Services.Implements;
 
-public sealed class AuthenticatationService(IHttpContextAccessor httpContextAccessor, IMapper mapper)
+public sealed class AuthenticatationService(IHttpContextAccessor httpContextAccessor, IMapper mapper) : IAuthenticationService
 {
     private readonly IHttpContextAccessor httpContextAccessor = httpContextAccessor;
     private readonly IMapper mapper = mapper;
@@ -22,7 +23,7 @@ public sealed class AuthenticatationService(IHttpContextAccessor httpContextAcce
     }
     #endregion
 
-    public async Task RegisterUserAsync(RegisterRequest registerRequest)
+    public async Task RegisterAsync(RegisterRequest registerRequest)
     {
         if (await IsEmailExistAsync(registerRequest.Email))
         {
@@ -55,4 +56,6 @@ public sealed class AuthenticatationService(IHttpContextAccessor httpContextAcce
             RefreshToken = string.Empty
         };
     }
+
+
 }

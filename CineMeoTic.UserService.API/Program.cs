@@ -1,4 +1,5 @@
 using BuildingBlocks.Exceptions.Handler;
+using CineMeoTic.UserService.API;
 using CineMeoTic.UserService.API.Middlewares;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -6,6 +7,7 @@ var builder = WebApplication.CreateBuilder(args);
 builder.AddServiceDefaults();
 
 // Add services to the container.
+builder.Services.AddDependencyInjections();
 
 builder.Services.AddControllers();
 // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
