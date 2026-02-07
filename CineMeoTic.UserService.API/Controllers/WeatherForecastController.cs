@@ -4,6 +4,8 @@ namespace CineMeoTic.UserService.API.Controllers;
 
 [ApiController]
 [Route("[controller]")]
+
+
 public class WeatherForecastController : ControllerBase
 {
     private static readonly string[] Summaries =

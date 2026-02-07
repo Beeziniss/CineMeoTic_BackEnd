@@ -1,3 +1,5 @@
+using Scalar.Aspire;
+
 IDistributedApplicationBuilder builder = DistributedApplication.CreateBuilder(args);
 
 //var cache = builder.AddRedis("cache");
@@ -68,7 +70,7 @@ IDistributedApplicationBuilder builder = DistributedApplication.CreateBuilder(ar
 //    .WithReference(apiService)
 //    .WaitFor(apiService);
 
-builder.AddProject<Projects.CineMeoTic_UserService_API>("cinemeotic-userservice-api");
+var user_service = builder.AddProject<Projects.CineMeoTic_UserService_API>("cinemeotic-userservice-api");
 
 
 
@@ -94,5 +96,10 @@ builder.AddProject<Projects.CineMeoTic_UserService_API>("cinemeotic-userservice-
 //    .WaitFor(cache)
 //    .WithReference(apiService)
 //    .WaitFor(apiService);
+
+var scalar = builder.AddScalarApiReference();
+
+scalar
+    .WithApiReference(user_service);
 
 builder.Build().Run();
