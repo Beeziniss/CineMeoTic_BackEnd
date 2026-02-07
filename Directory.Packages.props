@@ -8,6 +8,11 @@
     <PackageVersion Include="Aspire.Hosting.PostgreSQL" Version="13.1.0" />
     <PackageVersion Include="Aspire.Hosting.RabbitMQ" Version="13.1.0" />
     <PackageVersion Include="Aspire.Hosting.Redis" Version="13.1.0" />
+    <PackageVersion Include="Aspire.StackExchange.Redis.DistributedCaching" Version="13.1.0" />
+    <PackageVersion Include="Carter" Version="10.0.0" />
+    <PackageVersion Include="dotenv.net" Version="4.0.0" />
+    <PackageVersion Include="FluentValidation" Version="12.1.1" />
+    <PackageVersion Include="Marten" Version="8.20.0" />
     <PackageVersion Include="BCrypt.Net-Next" Version="4.0.3" />
     <PackageVersion Include="FluentValidation" Version="12.1.1" />
     <PackageVersion Include="Mapster" Version="7.4.0" />
@@ -27,6 +32,8 @@
     <PackageVersion Include="Microsoft.AspNetCore.Authentication.Google" Version="10.0.2" />
     <PackageVersion Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="10.0.2" />
     <PackageVersion Include="Microsoft.AspNetCore.OpenApi" Version="10.0.1" />
+    <PackageVersion Include="Scalar.Aspire" Version="0.8.45" />
+    <PackageVersion Include="Scalar.AspNetCore" Version="2.12.36" />
     <PackageVersion Include="SonarAnalyzer.CSharp" Version="10.19.0.132793" />
     <PackageVersion Include="Microsoft.AspNetCore.App" Version="2.2.8" />
     <PackageVersion Include="Microsoft.AspNetCore.Http" Version="2.3.9" />
