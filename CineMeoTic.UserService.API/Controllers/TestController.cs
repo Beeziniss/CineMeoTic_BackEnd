@@ -2,6 +2,7 @@
 using CineMeoTic.UserService.API.Models;
 using CineMeoTic.UserService.API.Services;
 using Marten;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
@@ -32,7 +33,7 @@ namespace CineMeoTic.UserService.API.Controllers
                     return await session.Query<UserModelTest>()
                                         .ToListAsync(ct);
                 }
-            );
+            ).RequireAuthorization(policy => policy.RequireRole("User"));
 
             // OR use the lightweight IQuerySession if all you're doing is running queries
             app.MapGet("/user/{id:guid}", async (Guid id, [FromServices] IQuerySession session, CancellationToken ct) =>

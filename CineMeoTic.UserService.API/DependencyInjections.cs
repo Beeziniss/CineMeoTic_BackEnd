@@ -58,7 +58,7 @@ public static class DependencyInjections
 
                 //ký vào token
                 ValidateIssuerSigningKey = true,
-                IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(Environment.GetEnvironmentVariable("JWTSettings_SecretKey") ?? throw new Exception("JWT's Secret CancelMode property is not set in environment or not found"))),
+                IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(Environment.GetEnvironmentVariable("JWT_SECRET_KEY") ?? throw new Exception("JWT's Secret CancelMode property is not set in environment or not found"))),
 
                 ClockSkew = TimeSpan.Zero,
 
@@ -93,13 +93,13 @@ public static class DependencyInjections
                     PathString path = context.HttpContext.Request.Path;
 
                     // Các segment được bảo mật
-                    IEnumerable<string> securedSegments = new[]
-                    {
-                        Environment.GetEnvironmentVariable("EKOFY_SIGNALR_CHAT_URL") ?? throw new UnconfiguredEnvironmentCustomException("Not set EKOFY_SIGNALR_CHAT_URL in the environment"),
-                        Environment.GetEnvironmentVariable("EKOFY_SIGNALR_NOTIFICATION_URL")?? throw new UnconfiguredEnvironmentCustomException("Not set EKOFY_SIGNALR_NOTIFICATION_URL in the environment"),
-                    }
-                    .Where(url => !string.IsNullOrWhiteSpace(url))
-                    .Select(url => new Uri(url!).AbsolutePath); // <-- Chỉ lấy phần path, ví dụ "/hub/chat"
+                    //IEnumerable<string> securedSegments = new[]
+                    //{
+                    //    Environment.GetEnvironmentVariable("EKOFY_SIGNALR_CHAT_URL") ?? throw new UnconfiguredEnvironmentCustomException("Not set EKOFY_SIGNALR_CHAT_URL in the environment"),
+                    //    Environment.GetEnvironmentVariable("EKOFY_SIGNALR_NOTIFICATION_URL")?? throw new UnconfiguredEnvironmentCustomException("Not set EKOFY_SIGNALR_NOTIFICATION_URL in the environment"),
+                    //}
+                    //.Where(url => !string.IsNullOrWhiteSpace(url))
+                    //.Select(url => new Uri(url!).AbsolutePath); // <-- Chỉ lấy phần path, ví dụ "/hub/chat"
 
                     //if (!string.IsNullOrWhiteSpace(accessToken) &&
                     //    securedSegments.Any(segment => path.StartsWithSegments(segment, StringComparison.Ordinal)))

@@ -1,3 +1,5 @@
+using Aspire.Hosting.Yarp;
+using Aspire.Hosting.Yarp.Transforms;
 using Scalar.Aspire;
 
 IDistributedApplicationBuilder builder = DistributedApplication.CreateBuilder(args);
@@ -96,6 +98,24 @@ var user_service = builder.AddProject<Projects.CineMeoTic_UserService_API>("cine
 //    .WaitFor(cache)
 //    .WithReference(apiService)
 //    .WaitFor(apiService);
+
+
+var gateway = builder.AddYarp("gateway")
+    .WithHttpHealthCheck("/health")
+    .WithHostPort(8080)
+    .WithHostHttpsPort(8081)
+    .WithConfiguration(yarp =>
+    {
+        yarp
+            .AddRoute("/users/api/{**catch-all}", user_service)
+            .WithTransformPathRemovePrefix("/users/api")
+            //.WithTransformRequestHeader("X-Forwarded-Host", "localhost:7252") //5246
+            .WithMatchMethods("POST", "GET");
+
+
+    })
+    .WithReference(user_service)
+    .WaitFor(user_service);
 
 var scalar = builder.AddScalarApiReference();
 
