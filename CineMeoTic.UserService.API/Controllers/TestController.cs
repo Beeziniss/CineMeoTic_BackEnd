@@ -33,7 +33,9 @@ namespace CineMeoTic.UserService.API.Controllers
                     return await session.Query<UserModelTest>()
                                         .ToListAsync(ct);
                 }
-            ).RequireAuthorization(policy => policy.RequireRole("User"));
+            ).RequireAuthorization(policy => policy.RequireRole("User"))
+             .Produces<List<UserModelTest>>()
+             .ProducesProblem(StatusCodes.Status400BadRequest);
 
             // OR use the lightweight IQuerySession if all you're doing is running queries
             app.MapGet("/user/{id:guid}", async (Guid id, [FromServices] IQuerySession session, CancellationToken ct) =>

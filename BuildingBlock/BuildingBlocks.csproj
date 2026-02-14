@@ -11,6 +11,8 @@
     <PackageReference Include="MediatR" />
     <PackageReference Include="Microsoft.AspNetCore.Http" />
 	<PackageReference Include="Microsoft.AspNetCore.App" />
+	<PackageReference Include="Serilog.Extensions.Logging" />
+	<PackageReference Include="Serilog.Sinks.Console" />
   </ItemGroup>
 
 </Project>

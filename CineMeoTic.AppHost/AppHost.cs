@@ -101,15 +101,13 @@ var user_service = builder.AddProject<Projects.CineMeoTic_UserService_API>("cine
 
 
 var gateway = builder.AddYarp("gateway")
-    .WithHttpHealthCheck("/health")
     .WithHostPort(8080)
-    .WithHostHttpsPort(8081)
+    .WithHostHttpsPort(8888)
     .WithConfiguration(yarp =>
     {
         yarp
             .AddRoute("/users/api/{**catch-all}", user_service)
             .WithTransformPathRemovePrefix("/users/api")
-            //.WithTransformRequestHeader("X-Forwarded-Host", "localhost:7252") //5246
             .WithMatchMethods("POST", "GET");
 
 

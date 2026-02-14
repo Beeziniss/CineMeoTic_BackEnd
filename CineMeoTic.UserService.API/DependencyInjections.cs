@@ -1,6 +1,7 @@
 ﻿using BuildingBlocks.Exceptions;
 using Mapster;
 using MapsterMapper;
+using Marten;
 using Microsoft.AspNetCore.Authentication.Google;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
@@ -18,6 +19,7 @@ public static class DependencyInjections
         services.AddAuthenticationExtension();
         services.AddAuthorizationExtension();
         services.AddCorsExtension();
+        services.AddDatabase();
     }
 
     public static void MapsterExtension(this IServiceCollection services)
@@ -37,13 +39,15 @@ public static class DependencyInjections
         services.AddAuthentication(options =>
         {
             options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
-            options.DefaultChallengeScheme = GoogleDefaults.AuthenticationScheme;
-        }).AddGoogle(googleOptions =>
-        {
-            googleOptions.ClientId = Environment.GetEnvironmentVariable("Authentication_Google_ClientId") ?? throw new UnconfiguredEnvironmentCustomException("Google's ClientId property is not set in environment or not found");
-            googleOptions.ClientSecret = Environment.GetEnvironmentVariable("Authentication_Google_ClientSecret") ?? throw new UnconfiguredEnvironmentCustomException("Google's Client Secret property is not set in environment or not found");
+            //options.DefaultChallengeScheme = GoogleDefaults.AuthenticationScheme;
+        })
+        //    .AddGoogle(googleOptions =>
+        //{
+        //    googleOptions.ClientId = Environment.GetEnvironmentVariable("Authentication_Google_ClientId") ?? throw new UnconfiguredEnvironmentCustomException("Google's ClientId property is not set in environment or not found");
+        //    googleOptions.ClientSecret = Environment.GetEnvironmentVariable("Authentication_Google_ClientSecret") ?? throw new UnconfiguredEnvironmentCustomException("Google's Client Secret property is not set in environment or not found");
 
-        }).AddJwtBearer(opt =>
+        //})
+            .AddJwtBearer(opt =>
         {
             opt.TokenValidationParameters = new TokenValidationParameters
             {
@@ -158,5 +162,15 @@ public static class DependencyInjections
                       .AllowAnyHeader();
             });
         });
+    }
+
+    public static void AddDatabase(this IServiceCollection services) 
+    {
+        services.AddMarten(options =>
+        {
+            options.Connection(Environment.GetEnvironmentVariable("POSTGRES_CONNECTION_STRING") ?? throw new Exception("No connection string connect to user database service"));
+            options.DatabaseSchemaName = Environment.GetEnvironmentVariable("POSTGRES_DB_SCHEMA") ?? throw new Exception("The database user service schema name does not exist");
+            options.AutoRegister();
+        }).UseLightweightSessions();
     }
 }

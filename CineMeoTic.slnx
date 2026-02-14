@@ -1,5 +1,4 @@
 <Solution>
-  <Folder Name="/ApiGateways/" />
   <Folder Name="/Aspire/">
     <Project Path="CineMeoTic.AppHost/CineMeoTic.AppHost.csproj" />
     <Project Path="CineMeoTic.ServiceDefaults/CineMeoTic.ServiceDefaults.csproj" />

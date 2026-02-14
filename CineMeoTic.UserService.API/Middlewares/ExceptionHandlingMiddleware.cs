@@ -2,13 +2,14 @@
 using System.Text.Json;
 using BuildingBlocks.Exceptions;
 using CineMeoTic.Common.Utils;
+using Serilog;
 
 namespace CineMeoTic.UserService.API.Middlewares;
 
-public class ExceptionHandlingMiddleware(RequestDelegate next, ILogger<ExceptionHandlingMiddleware> logger)
+public class ExceptionHandlingMiddleware(RequestDelegate next)//, ILogger<ExceptionHandlingMiddleware> logger)
 {
     private readonly RequestDelegate _next = next;
-    private readonly ILogger<ExceptionHandlingMiddleware> _logger = logger;
+    //private readonly ILogger<ExceptionHandlingMiddleware> _logger = logger;
 
     public async Task InvokeAsync(HttpContext context)
     {
@@ -36,7 +37,7 @@ public class ExceptionHandlingMiddleware(RequestDelegate next, ILogger<Exception
                 errorResponse.StatusCode = baseException.StatusCode;
                 errorResponse.Message = baseException.Message;
                 errorResponse.ErrorType = baseException.ErrorType;
-                _logger.LogWarning(baseException, "Custom exception occurred: {ErrorType} - {Message}",
+                Log.Error(baseException, "Custom exception occurred: {ErrorType} - {Message}",
                     baseException.ErrorType, baseException.Message);
                 break;
 
@@ -45,7 +46,7 @@ public class ExceptionHandlingMiddleware(RequestDelegate next, ILogger<Exception
                 errorResponse.StatusCode = (int)HttpStatusCode.BadRequest;
                 errorResponse.Message = argumentNullException.Message;
                 errorResponse.ErrorType = "ArgumentNull";
-                _logger.LogWarning(argumentNullException, "Argument null exception: {Message}",
+                Log.Warning(argumentNullException, "Argument null exception: {Message}",
                     argumentNullException.Message);
                 break;
 
@@ -54,7 +55,7 @@ public class ExceptionHandlingMiddleware(RequestDelegate next, ILogger<Exception
                 errorResponse.StatusCode = (int)HttpStatusCode.BadRequest;
                 errorResponse.Message = argumentException.Message;
                 errorResponse.ErrorType = "InvalidArgument";
-                _logger.LogWarning(argumentException, "Argument exception: {Message}",
+                Log.Warning(argumentException, "Argument exception: {Message}",
                     argumentException.Message);
                 break;
 
@@ -63,7 +64,7 @@ public class ExceptionHandlingMiddleware(RequestDelegate next, ILogger<Exception
                 errorResponse.StatusCode = (int)HttpStatusCode.Unauthorized;
                 errorResponse.Message = "Unauthorized access";
                 errorResponse.ErrorType = "Unauthorized";
-                _logger.LogWarning(unauthorizedAccessException, "Unauthorized access attempt");
+                Log.Warning(unauthorizedAccessException, "Unauthorized access attempt");
                 break;
 
             default:
@@ -71,7 +72,7 @@ public class ExceptionHandlingMiddleware(RequestDelegate next, ILogger<Exception
                 errorResponse.StatusCode = (int)HttpStatusCode.InternalServerError;
                 errorResponse.Message = "An internal server error occurred";
                 errorResponse.ErrorType = "InternalServerError";
-                _logger.LogError(exception, "Unhandled exception occurred: {Message}", exception.Message);
+                Log.Error(exception, "Unhandled exception occurred: {Message}", exception.Message);
                 break;
         }
 
