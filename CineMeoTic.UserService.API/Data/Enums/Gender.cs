@@ -1,6 +1,6 @@
 ﻿namespace CineMeoTic.UserService.API.Data.Enums;
 
-public enum UserGender
+public enum Gender
 {
     Unspecified,
     Male,

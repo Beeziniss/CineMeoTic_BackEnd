@@ -11,7 +11,7 @@ public sealed class User : Auditable
     public string PasswordHash { get; set; } = null!;
 
     public string? Name { get; set; }
-    public UserGender Gender { get; set; } = UserGender.Unspecified;
+    public Gender Gender { get; set; } = Gender.Unspecified;
     public string? PhoneNumber { get; set; }
 
     // Navigation properties

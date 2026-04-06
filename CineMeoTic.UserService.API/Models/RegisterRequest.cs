@@ -7,6 +7,6 @@ public sealed record class RegisterRequest
     public string Email { get; set; } = null!;
     public string Password { get; set; } = null!;
     public string? Name { get; set; }
-    public UserGender Gender { get; set; } = UserGender.Unspecified;
+    public Gender Gender { get; set; } = Gender.Unspecified;
     public string? PhoneNumber { get; set; }
 }

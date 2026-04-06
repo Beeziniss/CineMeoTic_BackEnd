@@ -8,7 +8,9 @@
     <Project Path="BuildingBlock/BuildingBlocks.csproj" Id="888e79dd-4644-42e0-bfe6-ec94cc957b65" />
   </Folder>
   <Folder Name="/Services/" />
-  <Folder Name="/Services/MovieService/" />
+  <Folder Name="/Services/MovieService/">
+    <Project Path="Cinemeotic.MovieService.API/Cinemeotic.MovieService.API.csproj" />
+  </Folder>
   <Folder Name="/Services/NotificationService/" />
   <Folder Name="/Services/UserService/">
     <Project Path="CineMeoTic.UserService.API/CineMeoTic.UserService.API.csproj" />
