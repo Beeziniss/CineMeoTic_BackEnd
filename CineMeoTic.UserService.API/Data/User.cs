@@ -14,6 +14,5 @@ public sealed class User : Auditable
     public Gender Gender { get; set; } = Gender.Unspecified;
     public string? PhoneNumber { get; set; }
 
-    // Navigation properties
-    public ICollection<Role> Roles { get; set; } = [];
+    public ICollection<Role> Roles { get; set; } = null!;
 }

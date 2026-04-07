@@ -8,6 +8,5 @@ public sealed class Permission : Auditable
     public string Name { get; set; } = null!;
     public string? Description { get; set; }
 
-    // Navigation properties
-    public ICollection<Role> Roles { get; set; } = [];
+    public ICollection<Role> Roles { get; set; } = null!;
 }
