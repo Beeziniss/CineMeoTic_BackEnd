@@ -16,7 +16,7 @@ public sealed class Movie : AuditableTimeStamped
     public DateTimeOffset? ReleaseDate { get; set; }
 
     public ICollection<MovieCredit>? MovieCredits { get; set; }
-    public ICollection<Genre>? Genres { get; set; }
+    public ICollection<Genre> Genres { get; set; } = null!;
     public ICollection<MovieRating>? MovieRatings { get; set; }
     public ICollection<Comment>? Comments { get; set; }
 }

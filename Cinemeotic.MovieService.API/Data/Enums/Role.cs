@@ -2,6 +2,6 @@
 
 public enum Role
 {
-    Caster,
-    Director
+    Caster = 0,
+    Director = 1
 }
