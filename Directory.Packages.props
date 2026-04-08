@@ -12,6 +12,7 @@
     <PackageVersion Include="Carter" Version="10.0.0" />
     <PackageVersion Include="dotenv.net" Version="4.0.0" />
     <PackageVersion Include="FluentValidation" Version="12.1.1" />
+    <PackageVersion Include="FluentValidation.DependencyInjectionExtensions" Version="12.1.1" />
     <PackageVersion Include="Marten" Version="8.20.0" />
     <PackageVersion Include="BCrypt.Net-Next" Version="4.0.3" />
     <PackageVersion Include="FluentValidation" Version="12.1.1" />
