@@ -4,7 +4,7 @@ using CineMeoTic.UserService.API;
 using CineMeoTic.UserService.API.Middlewares;
 using CineMeoTic.UserService.API.Services;
 using dotenv.net;
-using Marten;
+using Serilog;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -12,14 +12,13 @@ DotEnv.Load();
 
 builder.AddServiceDefaults();
 
-builder.Services.AddMarten(options =>
+builder.Host.UseSerilog((hostingContext, LoggerConfiguration) =>
 {
-    options.Connection(Environment.GetEnvironmentVariable("POSTGRES_CONNECTION_STRING") ?? throw new Exception("No connection string connect to user database service"));
-    options.DatabaseSchemaName = Environment.GetEnvironmentVariable("POSTGRES_DB_SCHEMA") ?? throw new Exception("The database user service schema name does not exist");
-    options.AutoRegister();
-})
-    .UseLightweightSessions();
-    //.UseNpgsqlDataSource();
+    LoggerConfiguration
+        //.Enrich.With(new CustomDateFormatter())
+        .ReadFrom.Configuration(hostingContext.Configuration);
+        //.WriteTo.Seq(Environment.GetEnvironmentVariable("SEQ_URL")!);
+});
 
 builder.Services.AddCarter();
 

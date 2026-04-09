@@ -3,18 +3,19 @@ using Microsoft.AspNetCore.Diagnostics;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
+using Serilog;
 
 namespace BuildingBlocks.Exceptions.Handler;
 
 
 // IF NOT USE PLEASE KEEP IT STAY HERE
 public sealed class CustomExceptionHandler
-    (ILogger<CustomExceptionHandler> logger)
+    //(ILogger<CustomExceptionHandler> logger)
     : IExceptionHandler
 {
     public async ValueTask<bool> TryHandleAsync(HttpContext context, Exception exception, CancellationToken cancellationToken)
     {
-        logger.LogError(
+        Log.Error(
             "Error Message: {exceptionMessage}, Time of occurrence {time}",
             exception.Message, DateTime.UtcNow);
 

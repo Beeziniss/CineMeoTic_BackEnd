@@ -2,6 +2,7 @@
 using CineMeoTic.UserService.API.Models;
 using CineMeoTic.UserService.API.Services;
 using Marten;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
@@ -27,12 +28,14 @@ public class TestController : ICarterModule
             }
         );
 
-        app.MapGet("/users", async (bool internalOnly, [FromServices] IDocumentSession session, CancellationToken ct) =>
-            {
-                return await session.Query<UserModelTest>()
-                                    .ToListAsync(ct);
-            }
-        );
+            app.MapGet("/users", async (bool internalOnly, [FromServices] IDocumentSession session, CancellationToken ct) =>
+                {
+                    return await session.Query<UserModelTest>()
+                                        .ToListAsync(ct);
+                }
+            ).RequireAuthorization(policy => policy.RequireRole("User"))
+             .Produces<List<UserModelTest>>()
+             .ProducesProblem(StatusCodes.Status400BadRequest);
 
         // OR use the lightweight IQuerySession if all you're doing is running queries
         app.MapGet("/user/{id:guid}", async (Guid id, [FromServices] IQuerySession session, CancellationToken ct) =>
