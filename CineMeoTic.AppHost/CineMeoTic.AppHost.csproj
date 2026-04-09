@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <Sdk Name="Aspire.AppHost.Sdk" Version="13.1.0" />
 
@@ -11,12 +11,18 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\CineMeoTic.ApiService\CineMeoTic.ApiService.csproj" />
+    <PackageReference Include="Aspire.Hosting.AppHost" />
+    <PackageReference Include="Aspire.Hosting.PostgreSQL" />
+    <PackageReference Include="Aspire.Hosting.RabbitMQ" />
+    <PackageReference Include="Aspire.Hosting.Redis" />
+    <PackageReference Include="Aspire.Hosting.Yarp" />
+    <PackageReference Include="Aspire.StackExchange.Redis.DistributedCaching" />
+    <PackageReference Include="Scalar.Aspire" />
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Aspire.Hosting.AppHost" Version="13.1.0" />
-    <PackageReference Include="Aspire.Hosting.Redis" Version="13.1.0" />
+    <ProjectReference Include="..\Cinemeotic.MovieService.API\Cinemeotic.MovieService.API.csproj" />
+    <ProjectReference Include="..\CineMeoTic.UserService.API\CineMeoTic.UserService.API.csproj" />
   </ItemGroup>
 
 </Project>

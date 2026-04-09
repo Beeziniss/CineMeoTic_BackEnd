@@ -1,0 +1,6 @@
+@CineMeoTic.Authentication_HostAddress = http://localhost:5049
+
+GET {{CineMeoTic.Authentication_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###

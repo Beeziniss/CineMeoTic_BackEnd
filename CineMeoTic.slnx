@@ -1,5 +1,21 @@
 <Solution>
-  <Project Path="CineMeoTic.ApiService/CineMeoTic.ApiService.csproj" />
-  <Project Path="CineMeoTic.AppHost/CineMeoTic.AppHost.csproj" />
-  <Project Path="CineMeoTic.ServiceDefaults/CineMeoTic.ServiceDefaults.csproj" />
+  <Folder Name="/Aspire/">
+    <Project Path="CineMeoTic.AppHost/CineMeoTic.AppHost.csproj" />
+    <Project Path="CineMeoTic.ServiceDefaults/CineMeoTic.ServiceDefaults.csproj" />
+  </Folder>
+  <Folder Name="/BuildingBlock/">
+    <Project Path="BuildingBlock/BuildingBlocks.csproj" Id="888e79dd-4644-42e0-bfe6-ec94cc957b65" />
+  </Folder>
+  <Folder Name="/Services/" />
+  <Folder Name="/Services/MovieService/">
+    <Project Path="Cinemeotic.MovieService.API/Cinemeotic.MovieService.API.csproj" />
+  </Folder>
+  <Folder Name="/Services/NotificationService/" />
+  <Folder Name="/Services/UserService/">
+    <Project Path="CineMeoTic.UserService.API/CineMeoTic.UserService.API.csproj" />
+  </Folder>
+  <Folder Name="/Solution Items/">
+    <File Path="Directory.Packages.props" />
+  </Folder>
+  <Project Path="CineMeoTic.Common/CineMeoTic.Common.csproj" Id="2828dc95-4b81-4238-a786-822f8b3db583" />
 </Solution>
