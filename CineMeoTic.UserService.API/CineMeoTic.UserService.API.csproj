@@ -9,6 +9,8 @@
   <ItemGroup>
     <PackageReference Include="Carter" />
     <PackageReference Include="dotenv.net" />
+    <PackageReference Include="FluentValidation" />
+    <PackageReference Include="FluentValidation.DependencyInjectionExtensions" />
     <PackageReference Include="Marten" />
     <PackageReference Include="BCrypt.Net-Next" />
     <PackageReference Include="Mapster" />

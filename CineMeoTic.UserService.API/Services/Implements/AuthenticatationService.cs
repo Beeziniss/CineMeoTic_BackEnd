@@ -1,5 +1,6 @@
 ﻿using CineMeoTic.Common.Utils;
 using CineMeoTic.UserService.API.Data;
+using CineMeoTic.UserService.API.Data.Enums;
 using CineMeoTic.UserService.API.Models;
 using CineMeoTic.UserService.API.Services.Intefaces;
 using MapsterMapper;
@@ -40,12 +41,12 @@ public sealed class AuthenticatationService(IHttpContextAccessor httpContextAcce
         Role role = new()
         {
             Id = Guid.NewGuid(),
-            Name = "Admin",
+            Name = UserRole.Admin,
         };
 
         User user = mapper.Map<LoginRequest, User>(loginRequest);
 
-        if (user.Roles.Any(x => x.Name != "Admin"))
+        if (user.Roles.Any(x => x.Name != UserRole.Admin))
         {
             throw new UnauthorizedAccessException("User does not have the required role.");
         }

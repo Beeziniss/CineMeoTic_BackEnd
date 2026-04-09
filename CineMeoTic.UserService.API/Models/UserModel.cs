@@ -7,6 +7,6 @@ public sealed record class UserModel
     public Guid Id { get; init; }
     public string Email { get; init; } = null!;
     public string? Name { get; init; }
-    public UserGender Gender { get; set; } = UserGender.Unspecified;
+    public Gender Gender { get; set; } = Gender.Unspecified;
     public string? PhoneNumber { get; init; }
 }

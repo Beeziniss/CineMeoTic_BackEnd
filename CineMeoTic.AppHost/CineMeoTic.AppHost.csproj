@@ -21,6 +21,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\Cinemeotic.MovieService.API\Cinemeotic.MovieService.API.csproj" />
     <ProjectReference Include="..\CineMeoTic.UserService.API\CineMeoTic.UserService.API.csproj" />
   </ItemGroup>
 

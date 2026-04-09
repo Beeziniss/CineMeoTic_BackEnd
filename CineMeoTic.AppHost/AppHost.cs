@@ -120,4 +120,6 @@ var scalar = builder.AddScalarApiReference();
 scalar
     .WithApiReference(user_service);
 
+builder.AddProject<Projects.Cinemeotic_MovieService_API>("cinemeotic-movieservice-api");
+
 builder.Build().Run();

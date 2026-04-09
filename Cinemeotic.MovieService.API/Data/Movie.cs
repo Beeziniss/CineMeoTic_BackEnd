@@ -1,0 +1,22 @@
+﻿using CineMeoTic.Common.Models;
+
+namespace Cinemeotic.MovieService.API.Data;
+
+public sealed class Movie : AuditableTimeStamped
+{
+    public Guid Id { get; set; }
+    public string Title { get; set; } = null!;
+    public string UnsignedTitle { get; set; } = null!;
+    public string? Description { get; set; }
+    public int? Duration { get; set; }
+    public string Country { get; set; } = null!;
+    public string Thumbnail { get; set; } = null!;
+    public string? Trailer { get; set; }
+    public List<string> Tags { get; set; } = []; // JSON
+    public DateTimeOffset? ReleaseDate { get; set; }
+
+    public ICollection<MovieCredit> MovieCredits { get; set; } = null!;
+    public ICollection<Genre> Genres { get; set; } = null!;
+    public ICollection<MovieRating>? Rating { get; set; }
+    public ICollection<Comment>? Comments { get; set; }
+}
