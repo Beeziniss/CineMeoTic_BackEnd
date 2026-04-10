@@ -10,5 +10,5 @@ public sealed class MovieCredit : AuditableTimeStamped
     public string? Biography { get; set; }
     public string? Cover { get; set; }
     public Role Role { get; set; }
-    public ICollection<Movie>? Movies { get; set; }
+    public ICollection<Movie>? Movies { get;}
 }

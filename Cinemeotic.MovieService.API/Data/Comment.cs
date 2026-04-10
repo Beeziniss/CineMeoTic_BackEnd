@@ -25,5 +25,5 @@ public sealed class Comment : AuditableTimeStamped
     public Comment? RootComment { get; set; }
     public ICollection<Comment>? Replies { get; set; }
 
-    public Movie Movie { get; set; } = null!;
+    public Movie? Movie { get; set; }
 }

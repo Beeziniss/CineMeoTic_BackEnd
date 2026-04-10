@@ -9,5 +9,5 @@ public sealed class MovieRating : AuditableTimeStamped
     public Guid UserId { get; set; }
     public double Rating { get; set; }
 
-    public Movie Movie { get; set; } = null!;
+    public Movie? Movie { get; set; }
 }

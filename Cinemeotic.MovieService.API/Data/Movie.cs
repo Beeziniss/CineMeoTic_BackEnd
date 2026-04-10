@@ -15,8 +15,8 @@ public sealed class Movie : AuditableTimeStamped
     public List<string> Tags { get; set; } = []; // JSON
     public DateTimeOffset? ReleaseDate { get; set; }
 
-    public ICollection<MovieCredit> MovieCredits { get; set; } = null!;
-    public ICollection<Genre> Genres { get; set; } = null!;
-    public ICollection<MovieRating>? Rating { get; set; }
-    public ICollection<Comment>? Comments { get; set; }
+    public ICollection<MovieCredit> MovieCredits { get; } = [];
+    public ICollection<Genre> Genres { get; } = [];
+    public ICollection<MovieRating> MovieRatings { get; } = [];
+    public ICollection<Comment> Comments { get; } = [];
 }

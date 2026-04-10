@@ -8,6 +8,6 @@ public sealed class Role : Auditable
     public Guid Id { get; set; }
     public UserRole Name { get; set; }
 
-    public ICollection<User>? Users { get; set; }
-    public ICollection<Permission>? Permissions { get; set; }
+    public ICollection<User> Users { get; } = [];
+    public ICollection<Permission> Permissions { get; } = [];
 }
