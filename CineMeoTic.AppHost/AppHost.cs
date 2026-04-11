@@ -73,9 +73,10 @@ IDistributedApplicationBuilder builder = DistributedApplication.CreateBuilder(ar
 //    .WaitFor(apiService);
 
 var user_service = builder.AddProject<Projects.CineMeoTic_UserService_API>("cinemeotic-userservice-api");
+var movie_service = builder.AddProject<Projects.Cinemeotic_MovieService_API>("cinemeotic-movieservice-api");
 
 
-
+#region A
 //var apiService = builder.AddProject<Projects.CineMeoTic_ApiService>("apiservice")
 //    .WithHttpHealthCheck("/health");
 
@@ -98,7 +99,7 @@ var user_service = builder.AddProject<Projects.CineMeoTic_UserService_API>("cine
 //    .WaitFor(cache)
 //    .WithReference(apiService)
 //    .WaitFor(apiService);
-
+#endregion
 
 var gateway = builder.AddYarp("gateway")
     .WithHostPort(8080)
@@ -108,18 +109,23 @@ var gateway = builder.AddYarp("gateway")
         yarp
             .AddRoute("/users/api/{**catch-all}", user_service)
             .WithTransformPathRemovePrefix("/users/api")
-            .WithMatchMethods("POST", "GET");
+            .WithMatchMethods("POST", "GET", "PUT", "DELETE");
 
+        yarp
+            .AddRoute("/movies/api/{**catch-all}", movie_service)
+            .WithTransformPathRemovePrefix("/movies/api")
+            .WithMatchMethods("POST", "GET", "PUT", "DELETE");
 
     })
     .WithReference(user_service)
-    .WaitFor(user_service);
+    .WithReference(movie_service)
+    .WaitFor(user_service)
+    .WaitFor(movie_service);
 
 var scalar = builder.AddScalarApiReference();
 
 scalar
-    .WithApiReference(user_service);
-
-builder.AddProject<Projects.Cinemeotic_MovieService_API>("cinemeotic-movieservice-api");
+    .WithApiReference(user_service)
+    .WithApiReference(movie_service);
 
 builder.Build().Run();

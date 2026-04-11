@@ -22,8 +22,8 @@ public class MapsterConfiguration : IRegister
 
         config.NewConfig<Movie, MovieResponse>()
             .Map(dest => dest.Rating,
-                 src => src.Rating == null
+                 src => src.MovieRatings == null
                      ? null
-                     : src.Rating.Select(x => x.Rating));
+                     : src.MovieRatings.Select(x => x.Rating));
     }
 }
