@@ -1,12 +1,17 @@
-﻿using BuildingBlocks.Exceptions;
+﻿using BuildingBlocks.Behaviors;
+using BuildingBlocks.Exceptions;
+using FluentValidation;
 using Mapster;
 using MapsterMapper;
 using Marten;
+using MediatR;
 using Microsoft.AspNetCore.Authentication.Google;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using System.Security.Claims;
 using System.Text;
+using CineMeoTic.UserService.API.Services.Implements;
+using CineMeoTic.UserService.API.Services.Intefaces;
 
 namespace CineMeoTic.UserService.API;
 
@@ -15,11 +20,31 @@ public static class DependencyInjections
     public static void AddDependencyInjections(this IServiceCollection services)
     {
         services.MapsterExtension();
+        services.AddCqrs();
+        services.AddAuthenticationService();
         services.AddHttpContextAccessor();
         services.AddAuthenticationExtension();
         services.AddAuthorizationExtension();
         services.AddCorsExtension();
         services.AddDatabase();
+    }
+
+    public static void AddCqrs(this IServiceCollection services)
+    {
+        services.AddMediatR(options =>
+        {
+            options.RegisterServicesFromAssembly(typeof(DependencyInjections).Assembly);
+        });
+
+        services.AddValidatorsFromAssembly(typeof(DependencyInjections).Assembly);
+
+        services.AddScoped(typeof(IPipelineBehavior<,>), typeof(LoggingBehavior<,>));
+        services.AddScoped(typeof(IPipelineBehavior<,>), typeof(ValidationBehavior<,>));
+    }
+
+    public static void AddAuthenticationService(this IServiceCollection services)
+    {
+        services.AddScoped<IAuthenticationService, AuthenticatationService>();
     }
 
     public static void MapsterExtension(this IServiceCollection services)

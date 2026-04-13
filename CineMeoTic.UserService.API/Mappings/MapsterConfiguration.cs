@@ -8,6 +8,7 @@ public class MapsterConfiguration : IRegister
 {
     public void Register(TypeAdapterConfig config)
     {
+        #region Model to DB
         config.NewConfig<RegisterRequest, User>()
               .Map(dest => dest.PasswordHash,
                    src => BCrypt.Net.BCrypt.HashPassword(src.Password));
@@ -15,5 +16,12 @@ public class MapsterConfiguration : IRegister
         config.NewConfig<LoginRequest, User>()
             .Map(dest => dest.PasswordHash,
                  src => BCrypt.Net.BCrypt.HashPassword(src.Password));
+        #endregion
+
+        #region DB to Model
+        config.NewConfig<User, UserLoginResponse>()
+              .Map(dest => dest.Roles,
+                   src => src.Roles.Select(r => r.Name));
+        #endregion
     }
 }
