@@ -1,4 +1,4 @@
-﻿using BuildingBlocks.CQRS;
+using BuildingBlocks.CQRS;
 using BuildingBlocks.Exceptions;
 using CineMeoTic.Common.Utils;
 using CineMeoTic.UserService.API.Data;

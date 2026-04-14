@@ -77,7 +77,7 @@ public sealed class CustomExceptionHandler
             )
         };
 
-        var problemDetails = new ProblemDetails
+        ProblemDetails problemDetails = new()
         {
             Title = details.Title,
             Detail = details.Detail,
@@ -89,7 +89,15 @@ public sealed class CustomExceptionHandler
 
         if (exception is ValidationException validationException)
         {
-            problemDetails.Extensions.Add("ValidationErrors", validationException.Errors);
+            //problemDetails.Extensions.Add("ValidationErrors", validationException.Errors);
+            Dictionary<string, string[]> errors = validationException.Errors
+               .GroupBy(e => e.PropertyName)
+               .ToDictionary(
+                   g => g.Key,
+                   g => g.Select(e => e.ErrorMessage).ToArray()
+               );
+
+            problemDetails.Extensions.Add("errors", errors);
         }
 
         await context.Response.WriteAsJsonAsync(problemDetails, cancellationToken: cancellationToken);

@@ -60,6 +60,7 @@ if (app.Environment.IsDevelopment())
 app.UseHttpsRedirection();
 
 app.UseMiddleware<ExceptionHandlingMiddleware>();
+app.UseMiddleware<ResponseWrapperMiddleware>();
 
 app.UseAuthentication();
 app.UseAuthorization();

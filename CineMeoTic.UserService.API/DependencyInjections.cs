@@ -12,6 +12,7 @@ using System.Security.Claims;
 using System.Text;
 using CineMeoTic.UserService.API.Services.Implements;
 using CineMeoTic.UserService.API.Services.Intefaces;
+using CineMeoTic.UserService.API.Data;
 
 namespace CineMeoTic.UserService.API;
 
