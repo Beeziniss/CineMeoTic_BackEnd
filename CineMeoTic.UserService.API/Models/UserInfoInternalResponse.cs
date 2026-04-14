@@ -2,7 +2,7 @@
 
 namespace CineMeoTic.UserService.API.Models;
 
-public sealed record class UserLoginResponse
+public sealed record class UserInfoInternalResponse
 {
     public Guid Id { get; init; }
     public string Email { get; init; } = null!;

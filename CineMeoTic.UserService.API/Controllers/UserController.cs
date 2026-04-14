@@ -17,9 +17,9 @@ namespace CineMeoTic.UserService.API.Controllers
         {
             app.MapGet("/users", async ([AsParameters] PaginationRequest request, ISender sender) =>
             {
-                var result = await sender.Send(new GetUsersQuery(request));
+                GetUsersResult result = await sender.Send(new GetUsersQuery(request));
 
-                var response = result.Adapt<GetUsersResponse>();
+                GetUsersResponse response = result.Adapt<GetUsersResponse>();
 
                 return Results.Ok(response);
             })

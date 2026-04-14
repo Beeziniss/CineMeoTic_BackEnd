@@ -19,7 +19,7 @@ public class MapsterConfiguration : IRegister
         #endregion
 
         #region DB to Model
-        config.NewConfig<User, UserLoginResponse>()
+        config.NewConfig<User, UserInfoInternalResponse>()
               .Map(dest => dest.Roles,
                    src => src.Roles.Select(r => r.Name));
         #endregion

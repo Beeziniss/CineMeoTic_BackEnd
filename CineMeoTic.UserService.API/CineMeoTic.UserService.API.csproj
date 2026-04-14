@@ -31,4 +31,8 @@
     <ProjectReference Include="..\CineMeoTic.ServiceDefaults\CineMeoTic.ServiceDefaults.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="CQRS\Queries\" />
+  </ItemGroup>
+
 </Project>
