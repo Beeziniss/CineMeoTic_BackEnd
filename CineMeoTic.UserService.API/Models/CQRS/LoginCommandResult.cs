@@ -1,8 +1,7 @@
-namespace CineMeoTic.UserService.API.Models.CQRS
+namespace CineMeoTic.UserService.API.Models.CQRS;
+
+public sealed record LoginCommandResult
 {
-    public sealed record LoginCommandResult
-    (
-        string AccessToken,
-        string RefreshToken
-    );
+    public string AccessToken { get; init; } = null!;
+    public string RefreshToken { get; init; } = null!;
 }

@@ -1,8 +1,9 @@
-﻿using CineMeoTic.UserService.API.Data.Enums;
+﻿using BuildingBlocks.CQRS;
+using CineMeoTic.UserService.API.Data.Enums;
 
-namespace CineMeoTic.UserService.API.Models;
+namespace CineMeoTic.UserService.API.Models.CQRS;
 
-public sealed record class RegisterRequest
+public sealed record RegisterCommand : ICommand
 {
     public string Email { get; set; } = null!;
     public string Password { get; set; } = null!;

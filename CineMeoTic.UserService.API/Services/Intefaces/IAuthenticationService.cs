@@ -5,6 +5,6 @@ namespace CineMeoTic.UserService.API.Services.Intefaces;
 
 public interface IAuthenticationService
 {
-    Task RegisterAsync(RegisterRequest registerRequest);
-    Task<LoginCommandResult> LoginAsync(LoginCommand command, CancellationToken cancellationToken);
+    Task<LoginCommandResult> LoginAsync(LoginCommand loginCommand, CancellationToken cancellationToken);
+    Task RegisterAsync(RegisterCommand registerCommand, CancellationToken cancellationToken);
 }

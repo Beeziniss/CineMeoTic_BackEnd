@@ -9,12 +9,11 @@ using Serilog;
 var builder = WebApplication.CreateBuilder(args);
 
 // Load environment variables from .env file
-if(Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") == "Development")
+if (Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") == "Development")
 {
-
     DotEnv.Load(new DotEnvOptions(envFilePaths: [".env.dev"]));
 }
-else if(Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") == "Production")
+else if (Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") == "Production")
 {
     DotEnv.Load(new DotEnvOptions(envFilePaths: [".env.prod"]));
 }

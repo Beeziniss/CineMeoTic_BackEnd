@@ -1,8 +1,8 @@
 ﻿using CineMeoTic.UserService.API.Data.Enums;
 
-namespace CineMeoTic.UserService.API.Models;
+namespace CineMeoTic.UserService.API.Models.CQRS;
 
-public sealed record class UserProfileResponse
+public sealed record UserProfileQuery
 {
     public Guid Id { get; init; }
     public string Name { get; init; } = null!;

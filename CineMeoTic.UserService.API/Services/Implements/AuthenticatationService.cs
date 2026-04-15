@@ -16,7 +16,7 @@ public sealed class AuthenticatationService(IHttpContextAccessor httpContextAcce
     private readonly IQuerySession _session = session;
     private readonly IJsonWebTokenService _jsonWebTokenService = jsonWebTokenService;
 
-#region Helper methods
+    #region Helper methods
     private async Task<bool> IsEmailExistAsync(string email)
     {
         string normalizeEmail = email.NormalizeLower();
@@ -69,11 +69,17 @@ public sealed class AuthenticatationService(IHttpContextAccessor httpContextAcce
             _httpContextAccessor.HttpContext?.Response.Cookies.Append("access_token", token, cookieOptions);
         }
 
-        return new LoginCommandResult(token, refreshToken);
+        return new LoginCommandResult
+        {
+            AccessToken = token,
+            RefreshToken = refreshToken
+        };
     }
 
-    public Task RegisterAsync(RegisterRequest registerRequest)
+    public Task RegisterAsync(RegisterCommand registerRequest, CancellationToken cancellationToken)
     {
-        throw new NotImplementedException();
+        // TODO: Implement register logic
+
+        return Task.CompletedTask;
     }
 }
