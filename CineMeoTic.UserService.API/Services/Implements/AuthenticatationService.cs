@@ -1,22 +1,26 @@
-﻿using CineMeoTic.Common.Utils;
+﻿using System.Security.Claims;
+using BuildingBlocks.Exceptions;
+using CineMeoTic.Common.Utils;
 using CineMeoTic.UserService.API.Data;
-using CineMeoTic.UserService.API.Data.Enums;
 using CineMeoTic.UserService.API.Models;
+using CineMeoTic.UserService.API.Models.CQRS;
 using CineMeoTic.UserService.API.Services.Intefaces;
-using MapsterMapper;
+using Mapster;
+using Marten;
 
 namespace CineMeoTic.UserService.API.Services.Implements;
 
-public sealed class AuthenticatationService(IHttpContextAccessor httpContextAccessor, IMapper mapper) : IAuthenticationService
+public sealed class AuthenticatationService(IHttpContextAccessor httpContextAccessor, IQuerySession session, IJsonWebTokenService jsonWebTokenService) : IAuthenticationService
 {
-    private readonly IHttpContextAccessor httpContextAccessor = httpContextAccessor;
-    private readonly IMapper mapper = mapper;
+    private readonly IHttpContextAccessor _httpContextAccessor = httpContextAccessor;
+    private readonly IQuerySession _session = session;
+    private readonly IJsonWebTokenService _jsonWebTokenService = jsonWebTokenService;
 
-    #region Helper methods
+#region Helper methods
     private async Task<bool> IsEmailExistAsync(string email)
     {
         string normalizeEmail = email.NormalizeLower();
-        return false;
+        return await _session.Query<User>().AnyAsync(u => u.Email.Equals(normalizeEmail, StringComparison.CurrentCultureIgnoreCase));
     }
     private static bool VerifyPassword(string password, string passwordHash)
     {
@@ -24,39 +28,52 @@ public sealed class AuthenticatationService(IHttpContextAccessor httpContextAcce
     }
     #endregion
 
-    public async Task RegisterAsync(RegisterRequest registerRequest)
+    public async Task<LoginCommandResult> LoginAsync(LoginCommand command, CancellationToken cancellationToken)
     {
-        if (await IsEmailExistAsync(registerRequest.Email))
+        if (await IsEmailExistAsync(command.Email))
         {
-            return;
+            throw new BadRequestCustomException(MessageException.EmailAlreadyExists);
         }
 
-        User newUser = mapper.Map<RegisterRequest, User>(registerRequest);
+        User? user = await _session.Query<User>()
+            .FirstOrDefaultAsync(u => u.Email == command.Email.NormalizeLower(), cancellationToken)
+            ?? throw new NotFoundCustomException(MessageException.UserNotFound);
 
-        return;
-    }
+        var result = user.Adapt<UserInfoInternalResponse>();
 
-    public async Task<AuthTokenResponse> Login(LoginRequest loginRequest)
-    {
-        Role role = new()
+        if (!VerifyPassword(command.Password, user.PasswordHash))
         {
-            Id = Guid.NewGuid(),
-            Name = UserRole.Admin,
-        };
-
-        User user = mapper.Map<LoginRequest, User>(loginRequest);
-
-        if (user.Roles.Any(x => x.Name != UserRole.Admin))
-        {
-            throw new UnauthorizedAccessException("User does not have the required role.");
+            throw new BadRequestCustomException(MessageException.InvalidCredential);
         }
 
-        return new AuthTokenResponse
+        IEnumerable<Claim> claims =
+        [
+            new Claim("Sub", user.Id.ToString()),
+        ];
+
+        CookieOptions cookieOptions = new()
         {
-            AccessToken = string.Empty,
-            RefreshToken = string.Empty
+            Secure = true,
+            HttpOnly = true,
+            SameSite = SameSiteMode.None,
+            MaxAge = TimeSpan.FromDays(7)
         };
+
+        string token = _jsonWebTokenService.GenerateAccessToken(claims);
+        string refreshToken = _jsonWebTokenService.GenerateRefreshToken();
+
+        //todo: luu refresh token vao redis
+
+        if (command.IsRememberMe)
+        {
+            _httpContextAccessor.HttpContext?.Response.Cookies.Append("access_token", token, cookieOptions);
+        }
+
+        return new LoginCommandResult(token, refreshToken);
     }
 
-
+    public Task RegisterAsync(RegisterRequest registerRequest)
+    {
+        throw new NotImplementedException();
+    }
 }

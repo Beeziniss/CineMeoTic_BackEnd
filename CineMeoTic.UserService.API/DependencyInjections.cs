@@ -195,6 +195,7 @@ public static class DependencyInjections
         services.AddMarten(options =>
         {
             options.Connection(Environment.GetEnvironmentVariable("POSTGRES_CONNECTION_STRING") ?? throw new Exception("No connection string connect to user database service"));
+            options.Schema.For<User>().Identity(u => u.Id);
             options.DatabaseSchemaName = Environment.GetEnvironmentVariable("POSTGRES_DB_SCHEMA") ?? throw new Exception("The database user service schema name does not exist");
             options.AutoRegister();
         }).UseLightweightSessions();
