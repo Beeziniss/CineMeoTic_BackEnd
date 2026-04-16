@@ -2,18 +2,21 @@
 using BuildingBlocks.Exceptions;
 using CineMeoTic.Common.Utils;
 using CineMeoTic.UserService.API.Data;
+using CineMeoTic.UserService.API.Data.Enums;
 using CineMeoTic.UserService.API.Models;
 using CineMeoTic.UserService.API.Models.CQRS;
 using CineMeoTic.UserService.API.Services.Intefaces;
 using Mapster;
+using MapsterMapper;
 using Marten;
 
 namespace CineMeoTic.UserService.API.Services.Implements;
 
-public sealed class AuthenticatationService(IHttpContextAccessor httpContextAccessor, IQuerySession session, IJsonWebTokenService jsonWebTokenService) : IAuthenticationService
+public sealed class AuthenticatationService(IHttpContextAccessor httpContextAccessor, IQuerySession session, IDocumentSession documentSession, IJsonWebTokenService jsonWebTokenService) : IAuthenticationService
 {
     private readonly IHttpContextAccessor _httpContextAccessor = httpContextAccessor;
     private readonly IQuerySession _session = session;
+    private readonly IDocumentSession _documentSession = documentSession;
     private readonly IJsonWebTokenService _jsonWebTokenService = jsonWebTokenService;
 
     #region Helper methods
@@ -30,26 +33,25 @@ public sealed class AuthenticatationService(IHttpContextAccessor httpContextAcce
 
     public async Task<LoginCommandResult> LoginAsync(LoginCommand command, CancellationToken cancellationToken)
     {
-        if (await IsEmailExistAsync(command.Email))
-        {
-            throw new BadRequestCustomException(MessageException.EmailAlreadyExists);
-        }
-
-        User? user = await _session.Query<User>()
+        UserInfoInternalResponse? user = await _session.Query<User>()
+            .ProjectToType<UserInfoInternalResponse>()
             .FirstOrDefaultAsync(u => u.Email == command.Email.NormalizeLower(), cancellationToken)
             ?? throw new NotFoundCustomException(MessageException.UserNotFound);
-
-        var result = user.Adapt<UserInfoInternalResponse>();
 
         if (!VerifyPassword(command.Password, user.PasswordHash))
         {
             throw new BadRequestCustomException(MessageException.InvalidCredential);
         }
 
-        IEnumerable<Claim> claims =
+        List<Claim> claims =
         [
-            new Claim("Sub", user.Id.ToString()),
+            new Claim("sub", user.Id.ToString()),
         ];
+
+        foreach (UserRole role in user.Roles.Distinct())
+        {
+            claims.Add(new Claim(ClaimTypes.Role, role.ToString()));
+        }
 
         CookieOptions cookieOptions = new()
         {
@@ -62,7 +64,7 @@ public sealed class AuthenticatationService(IHttpContextAccessor httpContextAcce
         string token = _jsonWebTokenService.GenerateAccessToken(claims);
         string refreshToken = _jsonWebTokenService.GenerateRefreshToken();
 
-        //todo: luu refresh token vao redis
+        // TODO: Save refresh token to Redis
 
         if (command.IsRememberMe)
         {
@@ -76,10 +78,23 @@ public sealed class AuthenticatationService(IHttpContextAccessor httpContextAcce
         };
     }
 
-    public Task RegisterAsync(RegisterCommand registerRequest, CancellationToken cancellationToken)
+    public async Task RegisterAsync(RegisterCommand registerCommand, CancellationToken cancellationToken)
     {
-        // TODO: Implement register logic
+        if (await IsEmailExistAsync(registerCommand.Email))
+        {
+            throw new BadRequestCustomException(MessageException.EmailAlreadyExists);
+        }
 
-        return Task.CompletedTask;
+        Role viewerRole = await _session.Query<Role>().FirstOrDefaultAsync(r => r.Name == UserRole.Viewer, cancellationToken)
+            ?? throw new NotFoundCustomException("Viewer role not found.");
+
+        User user = registerCommand.Adapt<User>();
+        user.PasswordHash = BCrypt.Net.BCrypt.HashPassword(registerCommand.Password);
+        user.Roles.Add(new Role { Name = UserRole.Viewer });
+
+        _documentSession.Store(user);
+        await _documentSession.SaveChangesAsync(cancellationToken);
+
+        return;
     }
 }

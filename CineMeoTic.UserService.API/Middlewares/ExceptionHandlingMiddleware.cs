@@ -32,6 +32,24 @@ public class ExceptionHandlingMiddleware(RequestDelegate next)//, ILogger<Except
 
         switch (exception)
         {
+            case FluentValidation.ValidationException validationException:
+                response.StatusCode = (int)HttpStatusCode.BadRequest;
+                errorResponse.StatusCode = (int)HttpStatusCode.BadRequest;
+                errorResponse.Message = "Validation failed";
+                errorResponse.ErrorType = "ValidationError";
+
+                Dictionary<string, string[]> errors = validationException.Errors
+                    .GroupBy(e => e.PropertyName)
+                    .ToDictionary(
+                        g => g.Key,
+                        g => g.Select(e => e.ErrorMessage).ToArray()
+                    );
+
+                errorResponse.Errors = errors;
+
+                Log.Warning(validationException, "Validation failed: {@Errors}", errors);
+                break;
+
             case BaseException baseException:
                 response.StatusCode = baseException.StatusCode;
                 errorResponse.StatusCode = baseException.StatusCode;
@@ -95,6 +113,7 @@ public class ExceptionHandlingMiddleware(RequestDelegate next)//, ILogger<Except
         public int StatusCode { get; set; }
         public string Message { get; set; } = string.Empty;
         public string ErrorType { get; set; } = string.Empty;
+        public Dictionary<string, string[]>? Errors { get; set; }
         public string TraceId { get; set; } = string.Empty;
         public string Path { get; set; } = string.Empty;
         public DateTime Timestamp { get; set; } = CustomTimeProvider.GetUtcPlus7Time();

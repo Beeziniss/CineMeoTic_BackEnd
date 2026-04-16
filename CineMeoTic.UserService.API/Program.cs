@@ -4,6 +4,7 @@ using CineMeoTic.UserService.API;
 using CineMeoTic.UserService.API.Middlewares;
 using CineMeoTic.UserService.API.Services;
 using dotenv.net;
+using Scalar.AspNetCore;
 using Serilog;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -53,6 +54,7 @@ if (app.Environment.IsDevelopment())
 {
     app.MapCarter();
     app.MapOpenApi();
+    app.MapScalarApiReference();
     app.UseExceptionHandler("/Error");
 }
 

@@ -8,26 +8,34 @@ public class ResponseWrapperMiddleware(RequestDelegate next)
 
     public async Task Invoke(HttpContext context)
     {
-        var originalBody = context.Response.Body;
-
-        using MemoryStream newBody = new();
-        context.Response.Body = newBody;
-
-        await _next(context);
-
-        newBody.Seek(0, SeekOrigin.Begin);
-        string bodyText = await new StreamReader(newBody).ReadToEndAsync();
-
-        ApiResponse<object> response = new()
+        // Only wrap API responses, skip for other paths (like static files)
+        if (context.Request.Path.StartsWithSegments("/api"))
         {
-            Success = context.Response.StatusCode < 400,
-            Data = bodyText,
-            Timestamp = DateTimeOffset.UtcNow,
-        };
+            Stream originalBody = context.Response.Body;
 
-        string json = System.Text.Json.JsonSerializer.Serialize(response);
+            using MemoryStream newBody = new();
+            context.Response.Body = newBody;
 
-        context.Response.Body = originalBody;
-        await context.Response.WriteAsync(json);
+            await _next(context);
+
+            newBody.Seek(0, SeekOrigin.Begin);
+            string bodyText = await new StreamReader(newBody).ReadToEndAsync();
+
+            ApiResponse<object> response = new()
+            {
+                Success = context.Response.StatusCode < 400,
+                Data = bodyText,
+                Timestamp = DateTimeOffset.UtcNow,
+            };
+
+            string json = System.Text.Json.JsonSerializer.Serialize(response);
+
+            context.Response.Body = originalBody;
+            await context.Response.WriteAsync(json);
+        }
+        else
+        {
+            await _next(context);
+        }
     }
 }

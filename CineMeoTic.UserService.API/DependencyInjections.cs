@@ -1,5 +1,8 @@
 ﻿using BuildingBlocks.Behaviors;
 using BuildingBlocks.Exceptions;
+using CineMeoTic.UserService.API.Data;
+using CineMeoTic.UserService.API.Services.Implements;
+using CineMeoTic.UserService.API.Services.Intefaces;
 using FluentValidation;
 using Mapster;
 using MapsterMapper;
@@ -8,11 +11,9 @@ using MediatR;
 using Microsoft.AspNetCore.Authentication.Google;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
+using System.Reflection;
 using System.Security.Claims;
 using System.Text;
-using CineMeoTic.UserService.API.Services.Implements;
-using CineMeoTic.UserService.API.Services.Intefaces;
-using CineMeoTic.UserService.API.Data;
 
 namespace CineMeoTic.UserService.API;
 
@@ -53,7 +54,7 @@ public static class DependencyInjections
         services.AddSingleton(provider =>
         {
             TypeAdapterConfig config = TypeAdapterConfig.GlobalSettings;
-            config.Scan(typeof(DependencyInjections).Assembly);
+            config.Scan(Assembly.GetExecutingAssembly());
             return config;
         });
         services.AddScoped<IMapper, ServiceMapper>();
