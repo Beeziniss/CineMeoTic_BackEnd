@@ -11,13 +11,17 @@
     <PackageReference Include="dotenv.net" />
     <PackageReference Include="FluentValidation" />
     <PackageReference Include="FluentValidation.DependencyInjectionExtensions" />
-    <PackageReference Include="Marten" />
+    <PackageReference Include="Aspire.Npgsql.EntityFrameworkCore.PostgreSQL" />
     <PackageReference Include="BCrypt.Net-Next" />
     <PackageReference Include="Mapster" />
     <PackageReference Include="Mapster.DependencyInjection" />
     <PackageReference Include="Microsoft.AspNetCore.Authentication.Google" />
     <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" />
     <PackageReference Include="Microsoft.AspNetCore.OpenApi" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Tools">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
     <PackageReference Include="Scalar.AspNetCore" />
     <PackageReference Include="Serilog.Extensions.Hosting" />
     <PackageReference Include="Serilog.Extensions.Logging" />

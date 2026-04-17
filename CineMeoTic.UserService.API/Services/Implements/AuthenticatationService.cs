@@ -1,40 +1,35 @@
-﻿using System.Security.Claims;
-using BuildingBlocks.Exceptions;
+﻿using BuildingBlocks.Exceptions;
 using CineMeoTic.Common.Utils;
 using CineMeoTic.UserService.API.Data;
-using CineMeoTic.UserService.API.Data.Enums;
-using CineMeoTic.UserService.API.Models;
 using CineMeoTic.UserService.API.Models.CQRS;
 using CineMeoTic.UserService.API.Services.Intefaces;
-using Mapster;
-using MapsterMapper;
-using Marten;
+using Microsoft.EntityFrameworkCore;
+using System.Security.Claims;
 
 namespace CineMeoTic.UserService.API.Services.Implements;
 
-public sealed class AuthenticatationService(IHttpContextAccessor httpContextAccessor, IQuerySession session, IDocumentSession documentSession, IJsonWebTokenService jsonWebTokenService) : IAuthenticationService
+public sealed class AuthenticatationService(IHttpContextAccessor httpContextAccessor, IUserDbContext userDbContext, IJsonWebTokenService jsonWebTokenService) : IAuthenticationService
 {
     private readonly IHttpContextAccessor _httpContextAccessor = httpContextAccessor;
-    private readonly IQuerySession _session = session;
-    private readonly IDocumentSession _documentSession = documentSession;
+    private readonly IUserDbContext _userDbContext = userDbContext;
     private readonly IJsonWebTokenService _jsonWebTokenService = jsonWebTokenService;
 
-    #region Helper methods
-    private async Task<bool> IsEmailExistAsync(string email)
+    private async Task CheckEmailExistAsync(string email)
     {
         string normalizeEmail = email.NormalizeLower();
-        return await _session.Query<User>().AnyAsync(u => u.Email.Equals(normalizeEmail, StringComparison.CurrentCultureIgnoreCase));
+        if (await _userDbContext.Users.AnyAsync(u => u.Email.Equals(normalizeEmail, StringComparison.CurrentCultureIgnoreCase)))
+        {
+            throw new BadRequestCustomException(MessageException.EmailAlreadyExists);
+        }
     }
     private static bool VerifyPassword(string password, string passwordHash)
     {
         return BCrypt.Net.BCrypt.Verify(password, passwordHash);
     }
-    #endregion
-
     public async Task<LoginCommandResult> LoginAsync(LoginCommand command, CancellationToken cancellationToken)
     {
-        UserInfoInternalResponse? user = await _session.Query<User>()
-            .ProjectToType<UserInfoInternalResponse>()
+        User? user = await _userDbContext.Users
+            .Include(u => u.Roles)
             .FirstOrDefaultAsync(u => u.Email == command.Email.NormalizeLower(), cancellationToken)
             ?? throw new NotFoundCustomException(MessageException.UserNotFound);
 
@@ -48,9 +43,9 @@ public sealed class AuthenticatationService(IHttpContextAccessor httpContextAcce
             new Claim("sub", user.Id.ToString()),
         ];
 
-        foreach (UserRole role in user.Roles.Distinct())
+        foreach (string role in user.Roles.Select(r => r.Name).Distinct(StringComparer.OrdinalIgnoreCase))
         {
-            claims.Add(new Claim(ClaimTypes.Role, role.ToString()));
+            claims.Add(new Claim(ClaimTypes.Role, role));
         }
 
         CookieOptions cookieOptions = new()
@@ -80,20 +75,23 @@ public sealed class AuthenticatationService(IHttpContextAccessor httpContextAcce
 
     public async Task RegisterAsync(RegisterCommand registerCommand, CancellationToken cancellationToken)
     {
-        if (await IsEmailExistAsync(registerCommand.Email))
-        {
-            throw new BadRequestCustomException(MessageException.EmailAlreadyExists);
-        }
+        await CheckEmailExistAsync(registerCommand.Email);
 
-        Role viewerRole = await _session.Query<Role>().FirstOrDefaultAsync(r => r.Name == UserRole.Viewer, cancellationToken)
+        Role viewerRole = await _userDbContext.Roles.FirstOrDefaultAsync(r => r.Name == "Viewer", cancellationToken)
             ?? throw new NotFoundCustomException("Viewer role not found.");
 
-        User user = registerCommand.Adapt<User>();
-        user.PasswordHash = BCrypt.Net.BCrypt.HashPassword(registerCommand.Password);
-        user.Roles.Add(new Role { Name = UserRole.Viewer });
+        User user = new()
+        {
+            Email = registerCommand.Email.NormalizeLower(),
+            PasswordHash = BCrypt.Net.BCrypt.HashPassword(registerCommand.Password),
+            DisplayName = registerCommand.DisplayName,
+            Gender = registerCommand.Gender,
+            Avatar = string.Empty,
+        };
+        user.Roles.Add(viewerRole);
 
-        _documentSession.Store(user);
-        await _documentSession.SaveChangesAsync(cancellationToken);
+        _userDbContext.Users.Add(user);
+        await _userDbContext.SaveChangesAsync(cancellationToken);
 
         return;
     }

@@ -1,6 +1,4 @@
-﻿using CineMeoTic.UserService.API.Data.Enums;
-
-namespace CineMeoTic.UserService.API.Models;
+﻿namespace CineMeoTic.UserService.API.Models;
 
 public sealed record UserInfoInternalResponse
 {
@@ -8,5 +6,5 @@ public sealed record UserInfoInternalResponse
     public string Email { get; init; } = null!;
     public string DisplayName { get; init; } = null!;
     public string PasswordHash { get; init; } = null!;
-    public IEnumerable<UserRole> Roles { get; init; } = null!;
+    public IEnumerable<string> Roles { get; init; } = null!;
 }

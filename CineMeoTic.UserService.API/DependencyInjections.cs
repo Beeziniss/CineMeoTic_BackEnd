@@ -6,10 +6,10 @@ using CineMeoTic.UserService.API.Services.Intefaces;
 using FluentValidation;
 using Mapster;
 using MapsterMapper;
-using Marten;
 using MediatR;
 using Microsoft.AspNetCore.Authentication.Google;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using System.Reflection;
 using System.Security.Claims;
@@ -23,7 +23,7 @@ public static class DependencyInjections
     {
         services.MapsterExtension();
         services.AddCqrs();
-        services.AddAuthenticationService();
+        services.AddServices();
         services.AddHttpContextAccessor();
         services.AddAuthenticationExtension();
         services.AddAuthorizationExtension();
@@ -44,9 +44,11 @@ public static class DependencyInjections
         services.AddScoped(typeof(IPipelineBehavior<,>), typeof(ValidationBehavior<,>));
     }
 
-    public static void AddAuthenticationService(this IServiceCollection services)
+    public static void AddServices(this IServiceCollection services)
     {
         services.AddScoped<IAuthenticationService, AuthenticatationService>();
+        services.AddScoped<IRoleService, RoleService>();
+        services.AddScoped<IPermissionService, PermissionService>();
     }
 
     public static void MapsterExtension(this IServiceCollection services)
@@ -193,12 +195,10 @@ public static class DependencyInjections
 
     public static void AddDatabase(this IServiceCollection services) 
     {
-        services.AddMarten(options =>
-        {
-            options.Connection(Environment.GetEnvironmentVariable("POSTGRES_CONNECTION_STRING") ?? throw new Exception("No connection string connect to user database service"));
-            options.Schema.For<User>().Identity(u => u.Id);
-            options.DatabaseSchemaName = Environment.GetEnvironmentVariable("POSTGRES_DB_SCHEMA") ?? throw new Exception("The database user service schema name does not exist");
-            options.AutoRegister();
-        }).UseLightweightSessions();
+        string connectionString = Environment.GetEnvironmentVariable("POSTGRES_CONNECTION_STRING")
+            ?? throw new Exception("No connection string connect to user database service");
+
+        services.AddDbContext<UserDbContext>(options => options.UseNpgsql(connectionString));
+        services.AddScoped<IUserDbContext>(sp => sp.GetRequiredService<UserDbContext>());
     }
 }

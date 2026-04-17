@@ -4,7 +4,7 @@ using MediatR;
 
 namespace CineMeoTic.UserService.API.Endpoints;
 
-public class AuthenticationEndpoint : ICarterModule
+public sealed class AuthenticationEndpoint : ICarterModule
 {
     public void AddRoutes(IEndpointRouteBuilder app)
     {
