@@ -11,7 +11,12 @@ public partial class UserDbContext(DbContextOptions<UserDbContext> options) : Db
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
-        modelBuilder.HasDefaultSchema(Environment.GetEnvironmentVariable("POSTGRES_DB_SCHEMA") ?? throw new UnconfiguredEnvironmentCustomException("POSTGRES_DB_SCHEMA is not set in the environment"));
+        string? schema = Environment.GetEnvironmentVariable("POSTGRES_DB_SCHEMA");
+
+        if (!string.IsNullOrWhiteSpace(schema))
+        {
+            modelBuilder.HasDefaultSchema(schema);
+        }
 
         modelBuilder.Entity<User>(entity =>
         {
