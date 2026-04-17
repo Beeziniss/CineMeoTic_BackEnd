@@ -4,9 +4,9 @@ namespace CineMeoTic.UserService.API.Data
 {
     public interface IUserDbContext
     {
-        DbSet<User> Users { get; }
-        DbSet<Role> Roles { get; }
-        DbSet<Permission> Permissions { get; }
+        DbSet<User> User { get; }
+        DbSet<Role> Role { get; }
+        DbSet<Permission> Permission { get; }
 
     Task<int> SaveChangesAsync(CancellationToken cancellationToken);
     }

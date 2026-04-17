@@ -1,0 +1,57 @@
+name: Update PostgreSQL Database
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+      - master
+      - Tu
+    paths:
+      - "CineMeoTic.UserService.API/Migrations/**"
+      - "CineMeoTic.UserService.API/Data/UserDbContext.cs"
+      - "CineMeoTic.UserService.API/DependencyInjections.cs"
+      - "CineMeoTic.UserService.API/Program.cs"
+      - "CineMeoTic.UserService.API/CineMeoTic.UserService.API.csproj"
+
+jobs:
+  migrate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    env:
+      ASPNETCORE_ENVIRONMENT: Production
+      POSTGRES_CONNECTION_STRING: ${{ secrets.POSTGRES_CONNECTION_STRING }}
+      POSTGRES_DB_SCHEMA: ${{ secrets.POSTGRES_DB_SCHEMA }}
+      JWT_SECRET_KEY: ci-temporary-jwt-secret-key-please-change
+      FRONTEND_LOCAL_URL: http://localhost:3000
+      FRONTEND_URL: https://localhost
+      BACKEND_URL: https://localhost
+
+    steps:
+      - name: Checkout source
+        uses: actions/checkout@v4
+
+      - name: Setup .NET 10 SDK
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 10.0.x
+
+      - name: Restore
+        run: dotnet restore CineMeoTic.UserService.API/CineMeoTic.UserService.API.csproj
+
+      - name: Build
+        run: dotnet build CineMeoTic.UserService.API/CineMeoTic.UserService.API.csproj -c Release --no-restore
+
+      - name: Install EF Core CLI
+        run: |
+          dotnet tool install --global dotnet-ef
+          echo "$HOME/.dotnet/tools" >> $GITHUB_PATH
+
+      - name: Run migration
+        run: >
+          dotnet ef database update
+          --project CineMeoTic.UserService.API/CineMeoTic.UserService.API.csproj
+          --startup-project CineMeoTic.UserService.API/CineMeoTic.UserService.API.csproj
+          --context UserDbContext
+          --configuration Release
+          --verbose

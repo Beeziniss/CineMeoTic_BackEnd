@@ -195,10 +195,19 @@ public static class DependencyInjections
 
     public static void AddDatabase(this IServiceCollection services) 
     {
+        //AppContext.SetSwitch("System.Net.DisableIPv6", true);
+
         string connectionString = Environment.GetEnvironmentVariable("POSTGRES_CONNECTION_STRING")
             ?? throw new Exception("No connection string connect to user database service");
 
-        services.AddDbContext<UserDbContext>(options => options.UseNpgsql(connectionString));
+        services.AddDbContext<UserDbContext>(options => options.UseNpgsql(connectionString, npgsqlOptions =>
+        {
+            //npgsqlOptions.EnableRetryOnFailure(
+            //    maxRetryCount: 5,
+            //    maxRetryDelay: TimeSpan.FromSeconds(10),
+            //    errorCodesToAdd: null);
+            //npgsqlOptions.CommandTimeout(15);
+        }));
         services.AddScoped<IUserDbContext>(sp => sp.GetRequiredService<UserDbContext>());
     }
 }

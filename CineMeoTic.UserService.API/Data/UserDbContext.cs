@@ -1,15 +1,18 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using BuildingBlocks.Exceptions;
+using Microsoft.EntityFrameworkCore;
 
 namespace CineMeoTic.UserService.API.Data;
 
 public partial class UserDbContext(DbContextOptions<UserDbContext> options) : DbContext(options), IUserDbContext
 {
-    public virtual DbSet<User> Users { get; set; }
-    public virtual DbSet<Role> Roles { get; set; }
-    public virtual DbSet<Permission> Permissions { get; set; }
+    public virtual DbSet<User> User { get; set; }
+    public virtual DbSet<Role> Role { get; set; }
+    public virtual DbSet<Permission> Permission { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
+        modelBuilder.HasDefaultSchema(Environment.GetEnvironmentVariable("POSTGRES_DB_SCHEMA") ?? throw new UnconfiguredEnvironmentCustomException("POSTGRES_DB_SCHEMA is not set in the environment"));
+
         modelBuilder.Entity<User>(entity =>
         {
             entity.HasKey(u => u.Id);

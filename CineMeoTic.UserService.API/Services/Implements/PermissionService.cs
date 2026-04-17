@@ -10,9 +10,9 @@ public sealed class PermissionService(IUserDbContext userDbContext) : IPermissio
 {
     private readonly IUserDbContext _userDbContext = userDbContext;
 
-    private async Task CheckPermissionExistAsync(string permissionName)
+    private async Task CheckPermissionExistAsync(string permissionName, CancellationToken cancellationToken)
     {
-        bool permissionExists = await _userDbContext.Permissions.AnyAsync(p => p.Name == permissionName);
+        bool permissionExists = await _userDbContext.Permission.AnyAsync(p => p.Name == permissionName, cancellationToken);
         if (permissionExists)
         {
             throw new BadRequestCustomException($"Permission '{permissionName}' already exists.");
@@ -20,14 +20,14 @@ public sealed class PermissionService(IUserDbContext userDbContext) : IPermissio
     }
     public async Task CreatePermissionAsync(CreatePermissionCommand createPermissionCommand, CancellationToken cancellationToken)
     {
-        await CheckPermissionExistAsync(createPermissionCommand.Name);
+        await CheckPermissionExistAsync(createPermissionCommand.Name, cancellationToken);
 
         Permission permission = new()
         {
             Name = createPermissionCommand.Name
         };
 
-        _userDbContext.Permissions.Add(permission);
+        _userDbContext.Permission.Add(permission);
         await _userDbContext.SaveChangesAsync(cancellationToken);
     }
 }

@@ -17,6 +17,7 @@ namespace CineMeoTic.UserService.API.Migrations
         {
 #pragma warning disable 612, 618
             modelBuilder
+                .HasDefaultSchema("user_service")
                 .HasAnnotation("ProductVersion", "10.0.5")
                 .HasAnnotation("Relational:MaxIdentifierLength", 63);
 
@@ -49,7 +50,7 @@ namespace CineMeoTic.UserService.API.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Permissions");
+                    b.ToTable("Permission", "user_service");
                 });
 
             modelBuilder.Entity("CineMeoTic.UserService.API.Data.Role", b =>
@@ -79,7 +80,7 @@ namespace CineMeoTic.UserService.API.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Roles");
+                    b.ToTable("Role", "user_service");
                 });
 
             modelBuilder.Entity("CineMeoTic.UserService.API.Data.User", b =>
@@ -127,7 +128,7 @@ namespace CineMeoTic.UserService.API.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Users");
+                    b.ToTable("User", "user_service");
                 });
 
             modelBuilder.Entity("RolePermissions", b =>
@@ -142,7 +143,7 @@ namespace CineMeoTic.UserService.API.Migrations
 
                     b.HasIndex("RolesId");
 
-                    b.ToTable("RolePermissions");
+                    b.ToTable("RolePermissions", "user_service");
                 });
 
             modelBuilder.Entity("UserRoles", b =>
@@ -157,7 +158,7 @@ namespace CineMeoTic.UserService.API.Migrations
 
                     b.HasIndex("UsersId");
 
-                    b.ToTable("UserRoles");
+                    b.ToTable("UserRoles", "user_service");
                 });
 
             modelBuilder.Entity("RolePermissions", b =>

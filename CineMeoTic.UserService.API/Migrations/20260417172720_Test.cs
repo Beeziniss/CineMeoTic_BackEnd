@@ -11,8 +11,12 @@ namespace CineMeoTic.UserService.API.Migrations
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
         {
+            migrationBuilder.EnsureSchema(
+                name: "user_service");
+
             migrationBuilder.CreateTable(
-                name: "Permissions",
+                name: "Permission",
+                schema: "user_service",
                 columns: table => new
                 {
                     Id = table.Column<Guid>(type: "uuid", nullable: false),
@@ -25,11 +29,12 @@ namespace CineMeoTic.UserService.API.Migrations
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_Permissions", x => x.Id);
+                    table.PrimaryKey("PK_Permission", x => x.Id);
                 });
 
             migrationBuilder.CreateTable(
-                name: "Roles",
+                name: "Role",
+                schema: "user_service",
                 columns: table => new
                 {
                     Id = table.Column<Guid>(type: "uuid", nullable: false),
@@ -42,11 +47,12 @@ namespace CineMeoTic.UserService.API.Migrations
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_Roles", x => x.Id);
+                    table.PrimaryKey("PK_Role", x => x.Id);
                 });
 
             migrationBuilder.CreateTable(
-                name: "Users",
+                name: "User",
+                schema: "user_service",
                 columns: table => new
                 {
                     Id = table.Column<Guid>(type: "uuid", nullable: false),
@@ -64,11 +70,12 @@ namespace CineMeoTic.UserService.API.Migrations
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_Users", x => x.Id);
+                    table.PrimaryKey("PK_User", x => x.Id);
                 });
 
             migrationBuilder.CreateTable(
                 name: "RolePermissions",
+                schema: "user_service",
                 columns: table => new
                 {
                     PermissionsId = table.Column<Guid>(type: "uuid", nullable: false),
@@ -78,21 +85,24 @@ namespace CineMeoTic.UserService.API.Migrations
                 {
                     table.PrimaryKey("PK_RolePermissions", x => new { x.PermissionsId, x.RolesId });
                     table.ForeignKey(
-                        name: "FK_RolePermissions_Permissions_PermissionsId",
+                        name: "FK_RolePermissions_Permission_PermissionsId",
                         column: x => x.PermissionsId,
-                        principalTable: "Permissions",
+                        principalSchema: "user_service",
+                        principalTable: "Permission",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                     table.ForeignKey(
-                        name: "FK_RolePermissions_Roles_RolesId",
+                        name: "FK_RolePermissions_Role_RolesId",
                         column: x => x.RolesId,
-                        principalTable: "Roles",
+                        principalSchema: "user_service",
+                        principalTable: "Role",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                 });
 
             migrationBuilder.CreateTable(
                 name: "UserRoles",
+                schema: "user_service",
                 columns: table => new
                 {
                     RolesId = table.Column<Guid>(type: "uuid", nullable: false),
@@ -102,26 +112,30 @@ namespace CineMeoTic.UserService.API.Migrations
                 {
                     table.PrimaryKey("PK_UserRoles", x => new { x.RolesId, x.UsersId });
                     table.ForeignKey(
-                        name: "FK_UserRoles_Roles_RolesId",
+                        name: "FK_UserRoles_Role_RolesId",
                         column: x => x.RolesId,
-                        principalTable: "Roles",
+                        principalSchema: "user_service",
+                        principalTable: "Role",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                     table.ForeignKey(
-                        name: "FK_UserRoles_Users_UsersId",
+                        name: "FK_UserRoles_User_UsersId",
                         column: x => x.UsersId,
-                        principalTable: "Users",
+                        principalSchema: "user_service",
+                        principalTable: "User",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                 });
 
             migrationBuilder.CreateIndex(
                 name: "IX_RolePermissions_RolesId",
+                schema: "user_service",
                 table: "RolePermissions",
                 column: "RolesId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_UserRoles_UsersId",
+                schema: "user_service",
                 table: "UserRoles",
                 column: "UsersId");
         }
@@ -130,19 +144,24 @@ namespace CineMeoTic.UserService.API.Migrations
         protected override void Down(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.DropTable(
-                name: "RolePermissions");
+                name: "RolePermissions",
+                schema: "user_service");
 
             migrationBuilder.DropTable(
-                name: "UserRoles");
+                name: "UserRoles",
+                schema: "user_service");
 
             migrationBuilder.DropTable(
-                name: "Permissions");
+                name: "Permission",
+                schema: "user_service");
 
             migrationBuilder.DropTable(
-                name: "Roles");
+                name: "Role",
+                schema: "user_service");
 
             migrationBuilder.DropTable(
-                name: "Users");
+                name: "User",
+                schema: "user_service");
         }
     }
 }

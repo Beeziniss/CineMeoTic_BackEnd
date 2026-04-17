@@ -59,6 +59,15 @@ public class ExceptionHandlingMiddleware(RequestDelegate next)//, ILogger<Except
                     baseException.ErrorType, baseException.Message);
                 break;
 
+            case InvalidOperationException invalidOperationException when IsTransientDatabaseFailure(invalidOperationException):
+                response.StatusCode = (int)HttpStatusCode.ServiceUnavailable;
+                errorResponse.StatusCode = (int)HttpStatusCode.ServiceUnavailable;
+                errorResponse.Message = "Database is temporarily unavailable. Please try again.";
+                errorResponse.ErrorType = "DatabaseUnavailable";
+                Log.Error(invalidOperationException, "Transient database failure occurred: {Message}",
+                    invalidOperationException.Message);
+                break;
+
             case ArgumentNullException argumentNullException:
                 response.StatusCode = (int)HttpStatusCode.BadRequest;
                 errorResponse.StatusCode = (int)HttpStatusCode.BadRequest;
@@ -106,6 +115,24 @@ public class ExceptionHandlingMiddleware(RequestDelegate next)//, ILogger<Except
 
         string result = JsonSerializer.Serialize(errorResponse, jsonOptions);
         await response.WriteAsync(result);
+    }
+
+    private static bool IsTransientDatabaseFailure(Exception exception)
+    {
+        Exception? current = exception;
+
+        while (current is not null)
+        {
+            if (current is TimeoutException)
+            {
+                return true;
+            }
+
+            current = current.InnerException;
+        }
+
+        return exception.Message.Contains("transient failure", StringComparison.OrdinalIgnoreCase)
+            || exception.Message.Contains("Failed to connect", StringComparison.OrdinalIgnoreCase);
     }
 
     private class ErrorResponse

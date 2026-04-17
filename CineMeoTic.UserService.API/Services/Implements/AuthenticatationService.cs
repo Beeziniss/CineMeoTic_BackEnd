@@ -17,7 +17,7 @@ public sealed class AuthenticatationService(IHttpContextAccessor httpContextAcce
     private async Task CheckEmailExistAsync(string email)
     {
         string normalizeEmail = email.NormalizeLower();
-        if (await _userDbContext.Users.AnyAsync(u => u.Email.Equals(normalizeEmail, StringComparison.CurrentCultureIgnoreCase)))
+        if (await _userDbContext.User.AnyAsync(u => u.Email.Equals(normalizeEmail, StringComparison.CurrentCultureIgnoreCase)))
         {
             throw new BadRequestCustomException(MessageException.EmailAlreadyExists);
         }
@@ -28,7 +28,7 @@ public sealed class AuthenticatationService(IHttpContextAccessor httpContextAcce
     }
     public async Task<LoginCommandResult> LoginAsync(LoginCommand command, CancellationToken cancellationToken)
     {
-        User? user = await _userDbContext.Users
+        User? user = await _userDbContext.User
             .Include(u => u.Roles)
             .FirstOrDefaultAsync(u => u.Email == command.Email.NormalizeLower(), cancellationToken)
             ?? throw new NotFoundCustomException(MessageException.UserNotFound);
@@ -77,7 +77,7 @@ public sealed class AuthenticatationService(IHttpContextAccessor httpContextAcce
     {
         await CheckEmailExistAsync(registerCommand.Email);
 
-        Role viewerRole = await _userDbContext.Roles.FirstOrDefaultAsync(r => r.Name == "Viewer", cancellationToken)
+        Role viewerRole = await _userDbContext.Role.FirstOrDefaultAsync(r => r.Name == "Viewer", cancellationToken)
             ?? throw new NotFoundCustomException("Viewer role not found.");
 
         User user = new()
@@ -90,7 +90,7 @@ public sealed class AuthenticatationService(IHttpContextAccessor httpContextAcce
         };
         user.Roles.Add(viewerRole);
 
-        _userDbContext.Users.Add(user);
+        _userDbContext.User.Add(user);
         await _userDbContext.SaveChangesAsync(cancellationToken);
 
         return;
