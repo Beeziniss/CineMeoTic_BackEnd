@@ -1,23 +1,25 @@
 ﻿using BuildingBlocks.Exceptions;
 using CineMeoTic.Common.Utils;
 using CineMeoTic.UserService.API.Data;
+using CineMeoTic.UserService.API.Models;
 using CineMeoTic.UserService.API.Models.CQRS;
 using CineMeoTic.UserService.API.Services.Intefaces;
-using Microsoft.EntityFrameworkCore;
+using Mapster;
+using Marten;
 using System.Security.Claims;
 
 namespace CineMeoTic.UserService.API.Services.Implements;
 
-public sealed class AuthenticatationService(IHttpContextAccessor httpContextAccessor, IUserDbContext userDbContext, IJsonWebTokenService jsonWebTokenService) : IAuthenticationService
+public sealed class AuthenticatationService(IHttpContextAccessor httpContextAccessor, IDocumentStore documentStore, IJsonWebTokenService jsonWebTokenService) : IAuthenticationService
 {
     private readonly IHttpContextAccessor _httpContextAccessor = httpContextAccessor;
-    private readonly IUserDbContext _userDbContext = userDbContext;
+    private readonly IDocumentStore _documentStore = documentStore;
     private readonly IJsonWebTokenService _jsonWebTokenService = jsonWebTokenService;
 
-    private async Task CheckEmailExistAsync(string email)
+    private static async Task CheckEmailExistAsync(IDocumentSession documentSession, string email, CancellationToken cancellationToken)
     {
         string normalizeEmail = email.NormalizeLower();
-        if (await _userDbContext.User.AnyAsync(u => u.Email.Equals(normalizeEmail, StringComparison.CurrentCultureIgnoreCase)))
+        if (await documentSession.Query<User>().AnyAsync(u => u.Email.Equals(normalizeEmail, StringComparison.CurrentCultureIgnoreCase), cancellationToken))
         {
             throw new BadRequestCustomException(MessageException.EmailAlreadyExists);
         }
@@ -28,10 +30,13 @@ public sealed class AuthenticatationService(IHttpContextAccessor httpContextAcce
     }
     public async Task<LoginCommandResult> LoginAsync(LoginCommand command, CancellationToken cancellationToken)
     {
-        User? user = await _userDbContext.User
-            .Include(u => u.Roles)
-            .FirstOrDefaultAsync(u => u.Email == command.Email.NormalizeLower(), cancellationToken)
-            ?? throw new NotFoundCustomException(MessageException.UserNotFound);
+        using IDocumentSession documentSession = _documentStore.LightweightSession();
+
+        UserInfoInternalResponse? user = await documentSession.Query<User>()
+            .ProjectToType<UserInfoInternalResponse>()
+           .FirstOrDefaultAsync(u => u.Email == command.Email.NormalizeLower(), cancellationToken)
+           // TODO: Other exception type, it should be 500 Internal Server Error
+           ?? throw new NotFoundCustomException(MessageException.UserNotFound);
 
         if (!VerifyPassword(command.Password, user.PasswordHash))
         {
@@ -43,7 +48,19 @@ public sealed class AuthenticatationService(IHttpContextAccessor httpContextAcce
             new Claim("sub", user.Id.ToString()),
         ];
 
-        foreach (string role in user.Roles.Select(r => r.Name).Distinct(StringComparer.OrdinalIgnoreCase))
+        IReadOnlyCollection<Guid> roleIds = await documentSession.Query<UserRole>()
+            .Where(ur => ur.UserId == user.Id)
+            .Select(ur => ur.RoleId)
+            .Distinct()
+            .ToListAsync(cancellationToken);
+
+        IReadOnlyCollection<string> roleNames = await documentSession.Query<Role>()
+            .Where(r => roleIds.Contains(r.Id))
+            .Select(r => r.Name)
+            .Distinct()
+            .ToListAsync(cancellationToken);
+
+        foreach (string role in roleNames)
         {
             claims.Add(new Claim(ClaimTypes.Role, role));
         }
@@ -75,9 +92,12 @@ public sealed class AuthenticatationService(IHttpContextAccessor httpContextAcce
 
     public async Task RegisterAsync(RegisterCommand registerCommand, CancellationToken cancellationToken)
     {
-        await CheckEmailExistAsync(registerCommand.Email);
+        using IDocumentSession documentSession = _documentStore.LightweightSession();
 
-        Role viewerRole = await _userDbContext.Role.FirstOrDefaultAsync(r => r.Name == "Viewer", cancellationToken)
+        await CheckEmailExistAsync(documentSession, registerCommand.Email, cancellationToken);
+
+        Role viewerRole = await documentSession.Query<Role>().FirstOrDefaultAsync(r => r.Name == "Viewer", cancellationToken)
+            // TODO: Other exception type, it should be 500 Internal Server Error
             ?? throw new NotFoundCustomException("Viewer role not found.");
 
         User user = new()
@@ -86,12 +106,18 @@ public sealed class AuthenticatationService(IHttpContextAccessor httpContextAcce
             PasswordHash = BCrypt.Net.BCrypt.HashPassword(registerCommand.Password),
             DisplayName = registerCommand.DisplayName,
             Gender = registerCommand.Gender,
-            Avatar = string.Empty,
         };
-        user.Roles.Add(viewerRole);
 
-        _userDbContext.User.Add(user);
-        await _userDbContext.SaveChangesAsync(cancellationToken);
+        UserRole userRole = new()
+        {
+            UserId = user.Id,
+            RoleId = viewerRole.Id,
+        };
+
+        documentSession.Store(user);
+        documentSession.Store(userRole);
+
+        await documentSession.SaveChangesAsync(cancellationToken);
 
         return;
     }

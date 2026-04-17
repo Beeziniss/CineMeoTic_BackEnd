@@ -1,5 +1,4 @@
-﻿using BuildingBlocks.Exceptions;
-using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.EntityFrameworkCore;
 
 namespace CineMeoTic.UserService.API.Data;
 
@@ -8,6 +7,8 @@ public partial class UserDbContext(DbContextOptions<UserDbContext> options) : Db
     public virtual DbSet<User> User { get; set; }
     public virtual DbSet<Role> Role { get; set; }
     public virtual DbSet<Permission> Permission { get; set; }
+    public virtual DbSet<UserRole> UserRole { get; set; }
+    public virtual DbSet<RolePermission> RolePermission { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -36,14 +37,40 @@ public partial class UserDbContext(DbContextOptions<UserDbContext> options) : Db
             entity.Property(p => p.Id).ValueGeneratedOnAdd();
         });
 
-        modelBuilder.Entity<User>()
-            .HasMany(u => u.Roles)
-            .WithMany(r => r.Users)
-            .UsingEntity("UserRoles");
+        modelBuilder.Entity<UserRole>(entity =>
+        {
+            entity.HasKey(ur => ur.Id);
+            entity.Property(ur => ur.Id).ValueGeneratedOnAdd();
 
-        modelBuilder.Entity<Role>()
-            .HasMany(r => r.Permissions)
-            .WithMany(p => p.Roles)
-            .UsingEntity("RolePermissions");
+            entity.HasIndex(ur => new { ur.UserId, ur.RoleId }).IsUnique();
+
+            entity.HasOne<User>()
+                .WithMany()
+                .HasForeignKey(ur => ur.UserId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            entity.HasOne<Role>()
+                .WithMany()
+                .HasForeignKey(ur => ur.RoleId)
+                .OnDelete(DeleteBehavior.Cascade);
+        });
+
+        modelBuilder.Entity<RolePermission>(entity =>
+        {
+            entity.HasKey(rp => rp.Id);
+            entity.Property(rp => rp.Id).ValueGeneratedOnAdd();
+
+            entity.HasIndex(rp => new { rp.RoleId, rp.PermissionId }).IsUnique();
+
+            entity.HasOne<Role>()
+                .WithMany()
+                .HasForeignKey(rp => rp.RoleId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            entity.HasOne<Permission>()
+                .WithMany()
+                .HasForeignKey(rp => rp.PermissionId)
+                .OnDelete(DeleteBehavior.Cascade);
+        });
     }
 }

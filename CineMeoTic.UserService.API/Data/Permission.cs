@@ -6,6 +6,4 @@ public sealed class Permission : Auditable
 {
     public Guid Id { get; set; }
     public string Name { get; set; } = null!;
-
-    public ICollection<Role> Roles { get; } = [];
 }

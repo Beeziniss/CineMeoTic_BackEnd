@@ -5,11 +5,11 @@ using CineMeoTic.UserService.API.Services.Implements;
 using CineMeoTic.UserService.API.Services.Intefaces;
 using FluentValidation;
 using Mapster;
+using Marten;
 using MapsterMapper;
 using MediatR;
 using Microsoft.AspNetCore.Authentication.Google;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using System.Reflection;
 using System.Security.Claims;
@@ -195,19 +195,22 @@ public static class DependencyInjections
 
     public static void AddDatabase(this IServiceCollection services) 
     {
-        //AppContext.SetSwitch("System.Net.DisableIPv6", true);
-
-        string connectionString = Environment.GetEnvironmentVariable("POSTGRES_CONNECTION_STRING")
-            ?? throw new Exception("No connection string connect to user database service");
-
-        services.AddDbContext<UserDbContext>(options => options.UseNpgsql(connectionString, npgsqlOptions =>
+        services.AddMarten(options =>
         {
-            //npgsqlOptions.EnableRetryOnFailure(
-            //    maxRetryCount: 5,
-            //    maxRetryDelay: TimeSpan.FromSeconds(10),
-            //    errorCodesToAdd: null);
-            //npgsqlOptions.CommandTimeout(15);
-        }));
-        services.AddScoped<IUserDbContext>(sp => sp.GetRequiredService<UserDbContext>());
+            options.Connection(Environment.GetEnvironmentVariable("POSTGRES_CONNECTION_STRING") ?? throw new UnconfiguredEnvironmentCustomException("POSTGRES_CONNECTION_STRING is not set in the environment"));
+            options.Schema.For<User>().Identity(u => u.Id);
+            options.Schema.For<Role>().Identity(r => r.Id);
+            options.Schema.For<Permission>().Identity(p => p.Id);
+            options.Schema.For<UserRole>()
+                .Identity(ur => ur.Id)
+                .Duplicate(ur => ur.UserId)
+                .Duplicate(ur => ur.RoleId);
+            options.Schema.For<RolePermission>()
+                .Identity(rp => rp.Id)
+                .Duplicate(rp => rp.RoleId)
+                .Duplicate(rp => rp.PermissionId);
+            options.DatabaseSchemaName = Environment.GetEnvironmentVariable("POSTGRES_DB_SCHEMA") ?? throw new UnconfiguredEnvironmentCustomException("POSTGRES_DB_SCHEMA is not set in the environment");
+            options.AutoRegister();
+        }).UseLightweightSessions();
     }
 }

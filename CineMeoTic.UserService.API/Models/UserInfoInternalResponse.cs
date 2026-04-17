@@ -6,5 +6,4 @@ public sealed record UserInfoInternalResponse
     public string Email { get; init; } = null!;
     public string DisplayName { get; init; } = null!;
     public string PasswordHash { get; init; } = null!;
-    public IEnumerable<string> Roles { get; init; } = null!;
 }

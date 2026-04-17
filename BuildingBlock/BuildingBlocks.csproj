@@ -8,6 +8,7 @@
 
   <ItemGroup>
     <PackageReference Include="FluentValidation" />
+    <PackageReference Include="Marten" />
     <PackageReference Include="MediatR" />
 	<PackageReference Include="Serilog.Extensions.Logging" />
 	<PackageReference Include="Serilog.Sinks.Console" />
