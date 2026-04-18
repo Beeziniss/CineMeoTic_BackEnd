@@ -23,6 +23,24 @@ public class ExceptionHandlingMiddleware(RequestDelegate next)//, ILogger<Except
         }
     }
 
+    // Error Codes:
+    // VF: Validation Failure
+    // DU: Database Unavailable
+    // IS: Internal Server Error
+    // VE: Validation Error
+    // xCE: Custom Exception
+    // AN: Argument Null Exception
+    // BG: Bad Gateway
+    // BR: Bad Request
+    // C: Conflict
+    // ES: External Service Error
+    // FA: Forbidden Access
+    // NF: Not Found
+    // TO: Transient Operation Exception
+    // UA: Unauthorized Access
+    // UE01: Unconfigured Environment Exception
+    // UE02: Unprocessable Entity
+    // Custom error codes can be added as needed for different exception types
     private async Task HandleExceptionAsync(HttpContext context, Exception exception)
     {
         HttpResponse response = context.Response;
@@ -36,7 +54,7 @@ public class ExceptionHandlingMiddleware(RequestDelegate next)//, ILogger<Except
                 response.StatusCode = (int)HttpStatusCode.BadRequest;
                 errorResponse.StatusCode = (int)HttpStatusCode.BadRequest;
                 errorResponse.Message = "Validation failed";
-                errorResponse.ErrorType = "ValidationError";
+                errorResponse.ErrorCode = "VF";
 
                 Dictionary<string, string[]> errors = validationException.Errors
                     .GroupBy(e => e.PropertyName)
@@ -54,51 +72,25 @@ public class ExceptionHandlingMiddleware(RequestDelegate next)//, ILogger<Except
                 response.StatusCode = baseException.StatusCode;
                 errorResponse.StatusCode = baseException.StatusCode;
                 errorResponse.Message = baseException.Message;
-                errorResponse.ErrorType = baseException.ErrorType;
-                Log.Error(baseException, "Custom exception occurred: {ErrorType} - {Message}",
-                    baseException.ErrorType, baseException.Message);
+                errorResponse.ErrorCode = baseException.ErrorCode;
+                Log.Error(baseException, "Custom exception occurred: {ErrorCode} - {Message}",
+                    baseException.ErrorCode, baseException.Message);
                 break;
 
             case InvalidOperationException invalidOperationException when IsTransientDatabaseFailure(invalidOperationException):
                 response.StatusCode = (int)HttpStatusCode.ServiceUnavailable;
                 errorResponse.StatusCode = (int)HttpStatusCode.ServiceUnavailable;
                 errorResponse.Message = "Database is temporarily unavailable. Please try again.";
-                errorResponse.ErrorType = "DatabaseUnavailable";
+                errorResponse.ErrorCode = "DU";
                 Log.Error(invalidOperationException, "Transient database failure occurred: {Message}",
                     invalidOperationException.Message);
-                break;
-
-            case ArgumentNullException argumentNullException:
-                response.StatusCode = (int)HttpStatusCode.BadRequest;
-                errorResponse.StatusCode = (int)HttpStatusCode.BadRequest;
-                errorResponse.Message = argumentNullException.Message;
-                errorResponse.ErrorType = "ArgumentNull";
-                Log.Warning(argumentNullException, "Argument null exception: {Message}",
-                    argumentNullException.Message);
-                break;
-
-            case ArgumentException argumentException:
-                response.StatusCode = (int)HttpStatusCode.BadRequest;
-                errorResponse.StatusCode = (int)HttpStatusCode.BadRequest;
-                errorResponse.Message = argumentException.Message;
-                errorResponse.ErrorType = "InvalidArgument";
-                Log.Warning(argumentException, "Argument exception: {Message}",
-                    argumentException.Message);
-                break;
-
-            case UnauthorizedAccessException unauthorizedAccessException:
-                response.StatusCode = (int)HttpStatusCode.Unauthorized;
-                errorResponse.StatusCode = (int)HttpStatusCode.Unauthorized;
-                errorResponse.Message = "Unauthorized access";
-                errorResponse.ErrorType = "Unauthorized";
-                Log.Warning(unauthorizedAccessException, "Unauthorized access attempt");
                 break;
 
             default:
                 response.StatusCode = (int)HttpStatusCode.InternalServerError;
                 errorResponse.StatusCode = (int)HttpStatusCode.InternalServerError;
                 errorResponse.Message = "An internal server error occurred";
-                errorResponse.ErrorType = "InternalServerError";
+                errorResponse.ErrorCode = "IS";
                 Log.Error(exception, "Unhandled exception occurred: {Message}", exception.Message);
                 break;
         }
@@ -139,7 +131,7 @@ public class ExceptionHandlingMiddleware(RequestDelegate next)//, ILogger<Except
     {
         public int StatusCode { get; set; }
         public string Message { get; set; } = string.Empty;
-        public string ErrorType { get; set; } = string.Empty;
+        public string ErrorCode { get; set; } = string.Empty;
         public Dictionary<string, string[]>? Errors { get; set; }
         public string TraceId { get; set; } = string.Empty;
         public string Path { get; set; } = string.Empty;

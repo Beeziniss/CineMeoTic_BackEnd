@@ -35,9 +35,9 @@ public class ExceptionHandlingMiddleware(RequestDelegate next, ILogger<Exception
                 response.StatusCode = baseException.StatusCode;
                 errorResponse.StatusCode = baseException.StatusCode;
                 errorResponse.Message = baseException.Message;
-                errorResponse.ErrorType = baseException.ErrorType;
+                errorResponse.ErrorType = baseException.ErrorCode;
                 _logger.LogWarning(baseException, "Custom exception occurred: {ErrorType} - {Message}",
-                    baseException.ErrorType, baseException.Message);
+                    baseException.ErrorCode, baseException.Message);
                 break;
 
             case ArgumentNullException argumentNullException:

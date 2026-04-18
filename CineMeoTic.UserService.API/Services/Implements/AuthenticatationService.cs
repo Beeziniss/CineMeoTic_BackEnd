@@ -96,9 +96,7 @@ public sealed class AuthenticatationService(IHttpContextAccessor httpContextAcce
 
         await CheckEmailExistAsync(documentSession, registerCommand.Email, cancellationToken);
 
-        Role viewerRole = await documentSession.Query<Role>().FirstOrDefaultAsync(r => r.Name == "Viewer", cancellationToken)
-            // TODO: Other exception type, it should be 500 Internal Server Error
-            ?? throw new NotFoundCustomException("Viewer role not found.");
+        Role viewerRole = await documentSession.Query<Role>().FirstOrDefaultAsync(r => r.Name == "Viewe", cancellationToken) ?? throw new NotFoundCustomException("Viewer role not found.");
 
         User user = new()
         {

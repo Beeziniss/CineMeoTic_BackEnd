@@ -55,7 +55,7 @@ public sealed class CustomExceptionHandler
             (
                 exception.Message,
                 exception.GetType().Name,
-                context.Response.StatusCode = StatusCodes.Status404NotFound
+                context.Response.StatusCode = StatusCodes.Status500InternalServerError
             ),
             UnauthorizedCustomException =>
             (
