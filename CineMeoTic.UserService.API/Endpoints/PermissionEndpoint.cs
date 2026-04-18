@@ -1,7 +1,6 @@
 ﻿using Carter;
 using CineMeoTic.UserService.API.Models.CQRS;
 using MediatR;
-using Microsoft.AspNetCore.Mvc;
 
 namespace CineMeoTic.UserService.API.Endpoints;
 
@@ -21,5 +20,18 @@ public sealed class PermissionEndpoint : ICarterModule
             .ProducesProblem(StatusCodes.Status400BadRequest)
             .WithSummary("Create Permission")
             .WithDescription("Create Permission");
+
+        app.MapPost("/permissions/batch", async (CreatePermissionsCommand permissionsCommand, ISender sender) =>
+            {
+                await sender.Send(permissionsCommand);
+
+                return Results.Ok();
+            }
+            )
+            .WithName("CreatePermissions")
+            .Produces(StatusCodes.Status200OK)
+            .ProducesProblem(StatusCodes.Status400BadRequest)
+            .WithSummary("Create Permissions")
+            .WithDescription("Create Multiple Permissions");
     }
 }

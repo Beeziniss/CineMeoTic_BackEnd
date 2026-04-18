@@ -31,4 +31,17 @@ public static class RegexPattern
             return @"^(0|\+84)(32|33|34|35|36|37|38|39|86|96|97|98|81|82|83|84|85|88|91|94|70|76|77|78|79|89|90|93|52|56|58|92|059|099|095)[0-9]{7}$";
         }
     }
+
+    /// <summary>
+    /// Gets the regular expression pattern for validating permission names.
+    /// Message: The pattern requires the permission name to be in the format of uppercase letters and dots.
+    /// Example: "User.Create", "Role.Delete", "Permission.Update".
+    /// </summary>
+    public static string PermissionNameRegexPattern
+    {
+        get
+        {
+            return @"^[A-Z][a-zA-Z0-9]*(\.[A-Z][a-zA-Z0-9]*)+$";
+        }
+    }
 }

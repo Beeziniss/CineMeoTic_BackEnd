@@ -10,10 +10,10 @@ public sealed class LoginCommandValidator : AbstractValidator<LoginCommand>
     {
         RuleFor(x => x.Email)
             .NotEmpty().WithMessage(MessageException.EmailRequired)
-            .EmailAddress().WithMessage(MessageException.EmailInvalidFormat);
+            .EmailAddress().WithMessage(MessageException.InvalidEmailFormat);
 
         RuleFor(x => x.Password)
             .NotEmpty().WithMessage(MessageException.PasswordRequired)
-            .Matches(RegexPattern.PasswordRegexPattern).WithMessage(MessageException.PasswordInvalidFormat);
+            .Matches(RegexPattern.PasswordRegexPattern).WithMessage(MessageException.InvalidPasswordFormat);
     }
 }

@@ -14,7 +14,7 @@ public sealed class RegisterCommandValidator : AbstractValidator<RegisterCommand
 
         RuleFor(x => x.Password)
             .NotEmpty().WithMessage(MessageException.PasswordRequired)
-            .Matches(RegexPattern.PasswordRegexPattern).WithMessage(MessageException.PasswordInvalidFormat);
+            .Matches(RegexPattern.PasswordRegexPattern).WithMessage(MessageException.InvalidPasswordFormat);
 
         RuleFor(x => x.ConfirmPassword)
             .NotEmpty().WithMessage("ConfirmPassword is required.")

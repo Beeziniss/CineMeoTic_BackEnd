@@ -2,7 +2,7 @@ using CineMeoTic.Common.Models;
 
 namespace CineMeoTic.UserService.API.Data;
 
-public sealed class UserRole : Auditable
+public sealed class UserRole
 {
     public Guid Id { get; set; }
     public Guid UserId { get; set; }

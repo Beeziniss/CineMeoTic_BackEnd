@@ -1,8 +1,6 @@
-using BuildingBlocks.Exceptions.Handler;
 using Carter;
 using CineMeoTic.UserService.API;
 using CineMeoTic.UserService.API.Middlewares;
-using CineMeoTic.UserService.API.Services;
 using dotenv.net;
 using Scalar.AspNetCore;
 using Serilog;
@@ -33,17 +31,8 @@ builder.Host.UseSerilog((hostingContext, LoggerConfiguration) =>
         //.WriteTo.Seq(Environment.GetEnvironmentVariable("SEQ_URL")!);
 });
 
-builder.Services.AddCarter();
-
-builder.Services.AddScoped<IJsonWebTokenService, JsonWebTokenService>();
 // Add services to the container.
 builder.Services.AddDependencyInjections();
-
-builder.Services.AddControllers();
-// Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
-builder.Services.AddOpenApi();
-
-builder.Services.AddExceptionHandler<CustomExceptionHandler>();
 
 var app = builder.Build();
 
@@ -55,6 +44,11 @@ if (app.Environment.IsDevelopment())
     app.MapCarter();
     app.MapOpenApi();
     app.MapScalarApiReference();
+    app.MapGet("/", context =>
+    {
+        context.Response.Redirect("/scalar");
+        return Task.CompletedTask;
+    });
     app.UseExceptionHandler("/Error");
 }
 
@@ -65,7 +59,5 @@ app.UseMiddleware<ResponseWrapperMiddleware>();
 
 app.UseAuthentication();
 app.UseAuthorization();
-
-app.MapControllers();
 
 app.Run();

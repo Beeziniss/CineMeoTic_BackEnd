@@ -1,12 +1,17 @@
 ﻿using BuildingBlocks.Behaviors;
 using BuildingBlocks.Exceptions;
+using BuildingBlocks.Exceptions.Handler;
+using Carter;
 using CineMeoTic.UserService.API.Data;
+using CineMeoTic.UserService.API.Data.Enums;
+using CineMeoTic.UserService.API.Endpoints;
+using CineMeoTic.UserService.API.Services;
 using CineMeoTic.UserService.API.Services.Implements;
 using CineMeoTic.UserService.API.Services.Intefaces;
 using FluentValidation;
 using Mapster;
-using Marten;
 using MapsterMapper;
+using Marten;
 using MediatR;
 using Microsoft.AspNetCore.Authentication.Google;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
@@ -14,6 +19,7 @@ using Microsoft.IdentityModel.Tokens;
 using System.Reflection;
 using System.Security.Claims;
 using System.Text;
+using Weasel.Core;
 
 namespace CineMeoTic.UserService.API;
 
@@ -21,6 +27,9 @@ public static class DependencyInjections
 {
     public static void AddDependencyInjections(this IServiceCollection services)
     {
+        services.AddCustomExceptionHandlerExtension();
+        services.AddOpenApiExtension();
+        services.AddCarterExtension();
         services.MapsterExtension();
         services.AddCqrs();
         services.AddServices();
@@ -29,6 +38,25 @@ public static class DependencyInjections
         services.AddAuthorizationExtension();
         services.AddCorsExtension();
         services.AddDatabase();
+    }
+
+    public static void AddCustomExceptionHandlerExtension(this IServiceCollection services)
+    {
+        services.AddExceptionHandler<CustomExceptionHandler>();
+    }
+
+    public static void AddOpenApiExtension(this IServiceCollection services)
+    {
+        // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
+        services.AddOpenApi();
+    }
+
+    public static void AddCarterExtension(this IServiceCollection services)
+    {
+        services.AddSingleton<ICarterModule, AuthenticationEndpoint>();
+        services.AddSingleton<ICarterModule, PermissionEndpoint>();
+        services.AddSingleton<ICarterModule, RoleEndpoint>();
+        services.AddCarter();
     }
 
     public static void AddCqrs(this IServiceCollection services)
@@ -49,6 +77,7 @@ public static class DependencyInjections
         services.AddScoped<IAuthenticationService, AuthenticatationService>();
         services.AddScoped<IRoleService, RoleService>();
         services.AddScoped<IPermissionService, PermissionService>();
+        services.AddScoped<IJsonWebTokenService, JsonWebTokenService>();
     }
 
     public static void MapsterExtension(this IServiceCollection services)
@@ -193,7 +222,7 @@ public static class DependencyInjections
         });
     }
 
-    public static void AddDatabase(this IServiceCollection services) 
+    public static void AddDatabase(this IServiceCollection services)
     {
         services.AddMarten(options =>
         {
@@ -210,7 +239,12 @@ public static class DependencyInjections
                 .Duplicate(rp => rp.RoleId)
                 .Duplicate(rp => rp.PermissionId);
             options.DatabaseSchemaName = Environment.GetEnvironmentVariable("POSTGRES_DB_SCHEMA") ?? throw new UnconfiguredEnvironmentCustomException("POSTGRES_DB_SCHEMA is not set in the environment");
+            options.UseSystemTextJsonForSerialization(enumStorage: EnumStorage.AsString, configure: serializerOptions =>
+                {
+                    serializerOptions.Converters.Add(new EnumMemberJsonConverter<Gender>());
+                });
             options.AutoRegister();
-        }).UseLightweightSessions();
+        })
+            .UseLightweightSessions();
     }
 }
