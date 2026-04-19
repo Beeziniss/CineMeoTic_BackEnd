@@ -1,4 +1,4 @@
-namespace CineMeoTic.UserService.API.Models.CQRS;
+namespace CineMeoTic.UserService.API.Models.Commands;
 
 public sealed record LoginCommandResult
 {

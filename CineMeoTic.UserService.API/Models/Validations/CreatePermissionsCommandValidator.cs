@@ -1,5 +1,5 @@
 ﻿using CineMeoTic.Common.Utils;
-using CineMeoTic.UserService.API.Models.CQRS;
+using CineMeoTic.UserService.API.Models.Commands;
 using FluentValidation;
 
 namespace CineMeoTic.UserService.API.Models.Validations;

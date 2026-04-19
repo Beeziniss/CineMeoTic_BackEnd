@@ -2,7 +2,7 @@
 using CineMeoTic.Common.Utils;
 using CineMeoTic.UserService.API.Data;
 using CineMeoTic.UserService.API.Models;
-using CineMeoTic.UserService.API.Models.CQRS;
+using CineMeoTic.UserService.API.Models.Commands;
 using CineMeoTic.UserService.API.Services.Intefaces;
 using Mapster;
 using Marten;
@@ -10,10 +10,10 @@ using System.Security.Claims;
 
 namespace CineMeoTic.UserService.API.Services.Implements;
 
-public sealed class AuthenticatationService(IHttpContextAccessor httpContextAccessor, IDocumentStore documentStore, IJsonWebTokenService jsonWebTokenService) : IAuthenticationService
+public sealed class AuthenticatationService(IHttpContextAccessor httpContextAccessor, IDocumentSession documentSession, IJsonWebTokenService jsonWebTokenService) : IAuthenticationService
 {
     private readonly IHttpContextAccessor _httpContextAccessor = httpContextAccessor;
-    private readonly IDocumentStore _documentStore = documentStore;
+    private readonly IDocumentSession _documentSession = documentSession;
     private readonly IJsonWebTokenService _jsonWebTokenService = jsonWebTokenService;
 
     private static async Task CheckEmailExistAsync(IDocumentSession documentSession, string email, CancellationToken cancellationToken)
@@ -30,13 +30,10 @@ public sealed class AuthenticatationService(IHttpContextAccessor httpContextAcce
     }
     public async Task<LoginCommandResult> LoginAsync(LoginCommand command, CancellationToken cancellationToken)
     {
-        using IDocumentSession documentSession = _documentStore.LightweightSession();
-
-        UserInfoInternalResponse? user = await documentSession.Query<User>()
+        UserInfoInternalResponse? user = await _documentSession.Query<User>()
             .ProjectToType<UserInfoInternalResponse>()
            .FirstOrDefaultAsync(u => u.Email == command.Email.NormalizeLower(), cancellationToken)
-           // TODO: Other exception type, it should be 500 Internal Server Error
-           ?? throw new NotFoundCustomException(MessageException.UserNotFound);
+           ?? throw new BadRequestCustomException(MessageException.UserNotFound);
 
         if (!VerifyPassword(command.Password, user.PasswordHash))
         {
@@ -48,14 +45,11 @@ public sealed class AuthenticatationService(IHttpContextAccessor httpContextAcce
             new Claim("sub", user.Id.ToString()),
         ];
 
-        IReadOnlyCollection<Guid> roleIds = await documentSession.Query<UserRole>()
-            .Where(ur => ur.UserId == user.Id)
-            .Select(ur => ur.RoleId)
-            .Distinct()
-            .ToListAsync(cancellationToken);
-
-        IReadOnlyCollection<string> roleNames = await documentSession.Query<Role>()
-            .Where(r => roleIds.Contains(r.Id))
+        IReadOnlyCollection<string> roleNames = await _documentSession.Query<Role>()
+            .Where(r => _documentSession.Query<UserRole>()
+                .Where(ur => ur.UserId == user.Id)
+                .Select(ur => ur.RoleId)
+                .Contains(r.Id))
             .Select(r => r.Name)
             .Distinct()
             .ToListAsync(cancellationToken);
@@ -92,11 +86,9 @@ public sealed class AuthenticatationService(IHttpContextAccessor httpContextAcce
 
     public async Task RegisterAsync(RegisterCommand registerCommand, CancellationToken cancellationToken)
     {
-        using IDocumentSession documentSession = _documentStore.LightweightSession();
+        await CheckEmailExistAsync(_documentSession, registerCommand.Email, cancellationToken);
 
-        await CheckEmailExistAsync(documentSession, registerCommand.Email, cancellationToken);
-
-        Role viewerRole = await documentSession.Query<Role>().FirstOrDefaultAsync(r => r.Name == "Viewe", cancellationToken) ?? throw new NotFoundCustomException("Viewer role not found.");
+        Role viewerRole = await _documentSession.Query<Role>().FirstOrDefaultAsync(r => r.Name == "Viewer", cancellationToken) ?? throw new NotFoundCustomException(MessageException.ViewerNotFound);
 
         User user = new()
         {
@@ -112,10 +104,10 @@ public sealed class AuthenticatationService(IHttpContextAccessor httpContextAcce
             RoleId = viewerRole.Id,
         };
 
-        documentSession.Store(user);
-        documentSession.Store(userRole);
+        _documentSession.Store(user);
+        _documentSession.Store(userRole);
 
-        await documentSession.SaveChangesAsync(cancellationToken);
+        await _documentSession.SaveChangesAsync(cancellationToken);
 
         return;
     }

@@ -1,5 +1,5 @@
 ﻿using CineMeoTic.UserService.API.Models;
-using CineMeoTic.UserService.API.Models.CQRS;
+using CineMeoTic.UserService.API.Models.Commands;
 
 namespace CineMeoTic.UserService.API.Services.Intefaces;
 

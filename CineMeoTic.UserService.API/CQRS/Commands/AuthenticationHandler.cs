@@ -1,5 +1,5 @@
 using BuildingBlocks.CQRS;
-using CineMeoTic.UserService.API.Models.CQRS;
+using CineMeoTic.UserService.API.Models.Commands;
 using CineMeoTic.UserService.API.Services.Intefaces;
 using MediatR;
 

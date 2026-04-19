@@ -1,6 +1,7 @@
 ﻿using BuildingBlocks.Exceptions;
+using CineMeoTic.Common.Utils;
 using CineMeoTic.UserService.API.Data;
-using CineMeoTic.UserService.API.Models.CQRS;
+using CineMeoTic.UserService.API.Models.Commands;
 using CineMeoTic.UserService.API.Services.Intefaces;
 using Marten;
 
@@ -15,28 +16,14 @@ public sealed class RoleService(IDocumentStore documentStore) : IRoleService
         bool roleExists = await documentSession.Query<Role>().AnyAsync(r => r.Name == roleName, cancellationToken);
         if (roleExists)
         {
-            throw new BadRequestCustomException($"Role '{roleName}' already exists.");
+            throw new BadRequestCustomException(MessageException.RoleAlreadyExists);
         }
     }
-
-    private static async Task CheckPermissionExistAsync(IDocumentSession documentSession, IEnumerable<string> permissionNames, CancellationToken cancellationToken)
-    {
-        foreach (string permissionName in permissionNames)
-        {
-            bool permissionExists = await documentSession.Query<Permission>().AnyAsync(p => p.Name == permissionName, cancellationToken);
-            if (!permissionExists)
-            {
-                throw new BadRequestCustomException($"Permission '{permissionName}' does not exist.");
-            }
-        }
-    }
-
     public async Task CreateRoleAsync(CreateRoleCommand roleCommand, CancellationToken cancellationToken)
     {
         using IDocumentSession documentSession = _documentStore.LightweightSession();
 
         await CheckRoleExistAsync(documentSession, roleCommand.RoleName, cancellationToken);
-        await CheckPermissionExistAsync(documentSession, roleCommand.PermissionNames, cancellationToken);
 
         Role role = new()
         {

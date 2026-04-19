@@ -1,6 +1,6 @@
 ﻿using CineMeoTic.UserService.API.Data;
 using CineMeoTic.UserService.API.Models;
-using CineMeoTic.UserService.API.Models.CQRS;
+using CineMeoTic.UserService.API.Models.Commands;
 using Mapster;
 
 namespace CineMeoTic.UserService.API.Mappings;

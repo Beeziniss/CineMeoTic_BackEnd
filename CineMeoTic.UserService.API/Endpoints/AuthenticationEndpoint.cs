@@ -1,5 +1,5 @@
 using Carter;
-using CineMeoTic.UserService.API.Models.CQRS;
+using CineMeoTic.UserService.API.Models.Commands;
 using MediatR;
 
 namespace CineMeoTic.UserService.API.Endpoints;

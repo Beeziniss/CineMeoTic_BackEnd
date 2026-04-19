@@ -1,5 +1,5 @@
 ﻿using CineMeoTic.Common.Utils;
-using CineMeoTic.UserService.API.Models.CQRS;
+using CineMeoTic.UserService.API.Models.Commands;
 using FluentValidation;
 
 namespace CineMeoTic.UserService.API.Models.Validations;
@@ -22,7 +22,7 @@ public sealed class RegisterCommandValidator : AbstractValidator<RegisterCommand
 
         RuleFor(x => x.DisplayName)
             .NotEmpty().WithMessage(MessageException.DisplayNameRequired)
-            .MinimumLength(2).WithMessage(MessageException.DisplayMinNameLength)
-            .MaximumLength(100).WithMessage(MessageException.DisplayMaxNameLength);
+            .MinimumLength(2).WithMessage(MessageException.DisplayNameMinLength)
+            .MaximumLength(100).WithMessage(MessageException.DisplayNameMaxLength);
     }
 }

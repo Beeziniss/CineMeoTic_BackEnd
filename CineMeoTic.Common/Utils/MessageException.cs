@@ -19,8 +19,8 @@ public static class MessageException
     #endregion
 
     #region Length Constraints
-    public const string DisplayMinNameLength = "DisplayName must be at least 2 characters long.";
-    public const string DisplayMaxNameLength = "DisplayName must be at most 100 characters long.";
+    public const string DisplayNameMinLength = "DisplayName must be at least 2 characters long.";
+    public const string DisplayNameMaxLength = "DisplayName must be at most 100 characters long.";
     #endregion
 
     #region Existence
@@ -30,7 +30,13 @@ public static class MessageException
     public const string PermissionsAlreadyExist = "One or more permissions already exist.";
     #endregion
 
+    #region Not Found
     public const string UserNotFound = "User not found.";
+    public const string ViewerNotFound = "Viewer not found.";
+    public const string PermissionNotFound = "Permission not found.";
+    public static string PermissionNotFoundMethod(string permissionName) => $"Permission {permissionName} not found";
+    #endregion
+
     public const string Unauthorized = "Unauthorized access.";
     public const string Forbidden = "Forbidden access.";
 }

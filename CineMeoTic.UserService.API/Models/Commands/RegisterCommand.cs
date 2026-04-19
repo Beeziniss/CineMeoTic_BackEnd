@@ -3,7 +3,7 @@ using BuildingBlocks.Behaviors;
 using CineMeoTic.UserService.API.Data.Enums;
 using System.Text.Json.Serialization;
 
-namespace CineMeoTic.UserService.API.Models.CQRS;
+namespace CineMeoTic.UserService.API.Models.Commands;
 
 public sealed record RegisterCommand : ICommand
 {
