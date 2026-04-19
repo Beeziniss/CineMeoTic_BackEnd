@@ -8,6 +8,12 @@ public class MapsterConfiguration : IRegister
 {
     public void Register(TypeAdapterConfig config)
     {
+        #region Model to DB
+        #endregion
+
+        #region DB to Model
+        #endregion
+
         config.NewConfig<Movie, MovieResponse>()
               .Map(dest => dest.Genres,
                    src => src.Genres.Select(x => x.Name).ToList());

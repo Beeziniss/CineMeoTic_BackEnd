@@ -1,12 +1,20 @@
-﻿using BuildingBlocks.Exceptions;
+﻿using BuildingBlocks.Behaviors;
+using BuildingBlocks.Exceptions;
+using BuildingBlocks.Exceptions.Handler;
+using Carter;
+using Cinemeotic.MovieService.API.Data;
+using Cinemeotic.MovieService.API.Data.Enums;
+using FluentValidation;
 using Mapster;
 using MapsterMapper;
 using Marten;
+using MediatR;
 using Microsoft.AspNetCore.Authentication.Google;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using System.Security.Claims;
 using System.Text;
+using Weasel.Core;
 
 namespace Cinemeotic.MovieService.API;
 
@@ -14,12 +22,56 @@ public static class DependencyInjections
 {
     public static void AddDependencyInjections(this IServiceCollection services)
     {
+        services.AddCustomExceptionHandlerExtension();
+        services.AddOpenApiExtension();
+        services.AddCarterExtension();
         services.MapsterExtension();
+        services.AddCqrs();
+        services.AddServices();
         services.AddHttpContextAccessor();
         services.AddAuthenticationExtension();
         services.AddAuthorizationExtension();
         services.AddCorsExtension();
         services.AddDatabase();
+    }
+
+    public static void AddCustomExceptionHandlerExtension(this IServiceCollection services)
+    {
+        services.AddExceptionHandler<CustomExceptionHandler>();
+    }
+
+    public static void AddOpenApiExtension(this IServiceCollection services)
+    {
+        // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
+        services.AddOpenApi();
+    }
+
+    public static void AddCarterExtension(this IServiceCollection services)
+    {
+        //services.AddSingleton<ICarterModule, >();
+        //services.AddSingleton<ICarterModule, >();
+        services.AddCarter();
+    }
+
+    public static void AddCqrs(this IServiceCollection services)
+    {
+        services.AddMediatR(options =>
+        {
+            options.RegisterServicesFromAssembly(typeof(DependencyInjections).Assembly);
+        });
+
+        services.AddValidatorsFromAssembly(typeof(DependencyInjections).Assembly);
+
+        services.AddScoped(typeof(IPipelineBehavior<,>), typeof(LoggingBehavior<,>));
+        services.AddScoped(typeof(IPipelineBehavior<,>), typeof(ValidationBehavior<,>));
+    }
+
+    public static void AddServices(this IServiceCollection services)
+    {
+        //services.AddScoped<IMovieService, MovieService>();
+        //services.AddScoped<IGenreService, GenreService>();
+        //services.AddScoped<ICommentService, CommentService>();
+        //services.AddScoped<IMovieRatingService, MovieRatingService>();
     }
 
     public static void MapsterExtension(this IServiceCollection services)
@@ -168,8 +220,27 @@ public static class DependencyInjections
     {
         services.AddMarten(options =>
         {
-            options.Connection(Environment.GetEnvironmentVariable("POSTGRES_CONNECTION_STRING") ?? throw new Exception("No connection string connect to user database service"));
-            options.DatabaseSchemaName = Environment.GetEnvironmentVariable("POSTGRES_DB_SCHEMA") ?? throw new Exception("The database user service schema name does not exist");
+            options.Connection(Environment.GetEnvironmentVariable("POSTGRES_CONNECTION_STRING") ?? throw new UnconfiguredEnvironmentCustomException("POSTGRES_CONNECTION_STRING is not set in the environment"));
+            options.Schema.For<Movie>().Identity(m => m.Id);
+            options.Schema.For<Genre>().Identity(g => g.Id);
+            options.Schema.For<MovieCredit>()
+                .Identity(mc => mc.Id)
+                .Duplicate(mc => mc.Role);
+            options.Schema.For<Comment>()
+                .Identity(c => c.Id)
+                .Duplicate(c => c.MovieId)
+                .Duplicate(c => c.UserId)
+                .Duplicate(c => c.ParentCommentId)
+                .Duplicate(c => c.RootCommentId);
+            options.Schema.For<MovieRating>()
+                .Identity(r => r.Id)
+                .Duplicate(r => r.MovieId)
+                .Duplicate(r => r.UserId);
+            options.DatabaseSchemaName = Environment.GetEnvironmentVariable("POSTGRES_DB_SCHEMA") ?? throw new UnconfiguredEnvironmentCustomException("POSTGRES_DB_SCHEMA is not set in the environment");
+            options.UseSystemTextJsonForSerialization(enumStorage: EnumStorage.AsString, configure: serializerOptions =>
+            {
+                serializerOptions.Converters.Add(new EnumMemberJsonConverter<Role>());
+            });
             options.AutoRegister();
         }).UseLightweightSessions();
     }

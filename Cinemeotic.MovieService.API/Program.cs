@@ -1,8 +1,9 @@
-using Cinemeotic.MovieService.API.Middlewares;
-using dotenv.net;
-using Serilog;
 using Carter;
 using Cinemeotic.MovieService.API;
+using Cinemeotic.MovieService.API.Middlewares;
+using dotenv.net;
+using Scalar.AspNetCore;
+using Serilog;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -32,13 +33,8 @@ builder.Host.UseSerilog((hostingContext, LoggerConfiguration) =>
     //.WriteTo.Seq(Environment.GetEnvironmentVariable("SEQ_URL")!);
 });
 
-builder.Services.AddCarter();
-
+// Add services to the container.
 builder.Services.AddDependencyInjections();
-
-builder.Services.AddControllers();
-// Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
-builder.Services.AddOpenApi();
 
 var app = builder.Build();
 
@@ -49,16 +45,21 @@ if (app.Environment.IsDevelopment())
 {
     app.MapCarter();
     app.MapOpenApi();
+    app.MapScalarApiReference();
+    app.MapGet("/", context =>
+    {
+        context.Response.Redirect("/scalar");
+        return Task.CompletedTask;
+    });
     app.UseExceptionHandler("/Error");
 }
 
 app.UseHttpsRedirection();
 
+app.UseMiddleware<ResponseWrapperMiddleware>();
 app.UseMiddleware<ExceptionHandlingMiddleware>();
 
 app.UseAuthentication();
 app.UseAuthorization();
-
-app.MapControllers();
 
 app.Run();

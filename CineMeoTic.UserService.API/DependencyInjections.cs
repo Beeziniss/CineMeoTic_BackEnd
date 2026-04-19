@@ -246,7 +246,6 @@ public static class DependencyInjections
                     serializerOptions.Converters.Add(new EnumMemberJsonConverter<Gender>());
                 });
             options.AutoRegister();
-        })
-            .UseLightweightSessions();
+        }).UseLightweightSessions();
     }
 }
