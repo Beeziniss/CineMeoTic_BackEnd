@@ -1,4 +1,4 @@
-﻿using CineMeoTic.Common.Utils;
+﻿using BuildingBlocks.Utils;
 using CineMeoTic.UserService.API.Models.Commands;
 using FluentValidation;
 

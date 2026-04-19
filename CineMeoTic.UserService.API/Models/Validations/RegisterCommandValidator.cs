@@ -1,4 +1,4 @@
-﻿using CineMeoTic.Common.Utils;
+﻿using BuildingBlocks.Utils;
 using CineMeoTic.UserService.API.Models.Commands;
 using FluentValidation;
 
@@ -10,7 +10,7 @@ public sealed class RegisterCommandValidator : AbstractValidator<RegisterCommand
     {
         RuleFor(x => x.Email)
             .NotEmpty().WithMessage("Email is required.")
-            .EmailAddress().WithMessage("Invalid email format.");
+            .EmailAddress().WithMessage(MessageException.InvalidEmailFormat);
 
         RuleFor(x => x.Password)
             .NotEmpty().WithMessage(MessageException.PasswordRequired)

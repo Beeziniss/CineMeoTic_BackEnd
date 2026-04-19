@@ -1,5 +1,5 @@
 ﻿using BuildingBlocks.Exceptions;
-using CineMeoTic.Common.Utils;
+using BuildingBlocks.Utils;
 using CineMeoTic.UserService.API.Data;
 using CineMeoTic.UserService.API.Models;
 using CineMeoTic.UserService.API.Models.Commands;
@@ -30,26 +30,29 @@ public sealed class AuthenticatationService(IHttpContextAccessor httpContextAcce
     }
     public async Task<LoginCommandResult> LoginAsync(LoginCommand command, CancellationToken cancellationToken)
     {
-        UserInfoInternalResponse? user = await _documentSession.Query<User>()
-            .ProjectToType<UserInfoInternalResponse>()
+        UserAuthInfoResponse? userAuthInfoResponse = await _documentSession.Query<User>()
+            .ProjectToType<UserAuthInfoResponse>()
            .FirstOrDefaultAsync(u => u.Email == command.Email.NormalizeLower(), cancellationToken)
            ?? throw new BadRequestCustomException(MessageException.UserNotFound);
 
-        if (!VerifyPassword(command.Password, user.PasswordHash))
+        if (!VerifyPassword(command.Password, userAuthInfoResponse.PasswordHash))
         {
             throw new BadRequestCustomException(MessageException.InvalidCredential);
         }
 
         List<Claim> claims =
         [
-            new Claim("sub", user.Id.ToString()),
+            new Claim("sub", userAuthInfoResponse.Id.ToString()),
         ];
 
+        IReadOnlyCollection<Guid> roleIds = await _documentSession.Query<UserRole>()
+            .Where(ur => ur.UserId == userAuthInfoResponse.Id)
+            .Select(ur => ur.RoleId)
+            .Distinct()
+            .ToListAsync(cancellationToken);
+
         IReadOnlyCollection<string> roleNames = await _documentSession.Query<Role>()
-            .Where(r => _documentSession.Query<UserRole>()
-                .Where(ur => ur.UserId == user.Id)
-                .Select(ur => ur.RoleId)
-                .Contains(r.Id))
+            .Where(r => roleIds.Contains(r.Id))
             .Select(r => r.Name)
             .Distinct()
             .ToListAsync(cancellationToken);

@@ -8,7 +8,7 @@ public sealed class RoleEndpoint : ICarterModule
 {
     public void AddRoutes(IEndpointRouteBuilder app)
     {
-        app.MapPost("/roles", async (CreateRoleCommand roleCommand, ISender sender) =>
+        app.MapPost("api/roles", async (CreateRoleCommand roleCommand, ISender sender) =>
             {
                 await sender.Send(roleCommand);
 
@@ -16,8 +16,6 @@ public sealed class RoleEndpoint : ICarterModule
             }
         )
         .WithName("CreateRole")
-        .Produces(StatusCodes.Status200OK)
-        .ProducesProblem(StatusCodes.Status400BadRequest)
         .WithSummary("Create Role")
         .WithDescription("Create Role");
     }

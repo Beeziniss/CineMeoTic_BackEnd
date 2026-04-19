@@ -16,7 +16,6 @@
 
 	<ItemGroup>
 		<ProjectReference Include="..\BuildingBlock\BuildingBlocks.csproj" />
-		<ProjectReference Include="..\CineMeoTic.Common\CineMeoTic.Common.csproj" />
 		<ProjectReference Include="..\CineMeoTic.ServiceDefaults\CineMeoTic.ServiceDefaults.csproj" />
 	</ItemGroup>
 

@@ -8,21 +8,18 @@ public sealed class AuthenticationEndpoint : ICarterModule
 {
     public void AddRoutes(IEndpointRouteBuilder app)
     {
-        app.MapPost("/login", async (LoginCommand command, ISender sender) =>
+        app.MapPost("api/login", async (LoginCommand command, ISender sender) =>
             {
                 LoginCommandResult result = await sender.Send(command);
 
                 return Results.Ok(result);
             }
         )
-        // .RequireAuthorization(policy => policy.RequireRole("User"))
         .WithName("LoginUser")
-        .Produces<LoginCommandResult>(StatusCodes.Status200OK)
-        .ProducesProblem(StatusCodes.Status400BadRequest)
         .WithSummary("Login User")
         .WithDescription("Login User");
 
-        app.MapPost("/register", async (RegisterCommand command, ISender sender) =>
+        app.MapPost("api/register", async (RegisterCommand command, ISender sender) =>
            {
                await sender.Send(command);
                return Results.Ok();

@@ -1,5 +1,5 @@
 ﻿using BuildingBlocks.Exceptions;
-using CineMeoTic.Common.Utils;
+using BuildingBlocks.Utils;
 using CineMeoTic.UserService.API.Data;
 using CineMeoTic.UserService.API.Models.Commands;
 using CineMeoTic.UserService.API.Services.Intefaces;

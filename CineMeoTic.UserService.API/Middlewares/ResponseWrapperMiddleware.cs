@@ -1,4 +1,5 @@
-﻿using BuildingBlocks.Behaviors;
+﻿using BuildingBlocks.Utils;
+using System.Text.Json;
 
 namespace CineMeoTic.UserService.API.Middlewares;
 
@@ -26,17 +27,44 @@ public class ResponseWrapperMiddleware(RequestDelegate next)
 
         newBody.Seek(0, SeekOrigin.Begin);
         string bodyText = await new StreamReader(newBody).ReadToEndAsync();
+        
+        context.Response.Body = originalBody;
 
-        ApiResponse<object> response = new()
+        if (context.Response.StatusCode >= 400)
         {
-            Success = context.Response.StatusCode < 400,
-            Data = bodyText,
-            Timestamp = DateTimeOffset.UtcNow,
+            context.Response.ContentType = "application/json";
+            await context.Response.WriteAsync(bodyText);
+            return;
+        }
+
+        object? data = null;
+        if (!string.IsNullOrWhiteSpace(bodyText))
+        {
+            try
+            {
+                data = JsonSerializer.Deserialize<object>(bodyText);
+            }
+            catch
+            {
+                data = bodyText;
+            }
+        }
+
+        object response = new
+        {
+            context.Response.StatusCode,
+            Message = "Success",
+            Data = data,
+            TraceId = context.TraceIdentifier,
+            Path = context.Request.Path.Value ?? string.Empty,
+            Timestamp = CustomTimeProvider.GetUtcPlus7TimeOffset()
         };
 
-        string json = System.Text.Json.JsonSerializer.Serialize(response);
+        string json = JsonSerializer.Serialize(response, new JsonSerializerOptions
+        {
+            PropertyNamingPolicy = JsonNamingPolicy.CamelCase
+        });
 
-        context.Response.Body = originalBody;
         context.Response.ContentType = "application/json";
 
         await context.Response.WriteAsync(json);

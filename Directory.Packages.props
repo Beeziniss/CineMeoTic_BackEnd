@@ -21,6 +21,7 @@
     <PackageVersion Include="MediatR" Version="14.1.0" />
     <PackageVersion Include="Microsoft.AspNetCore.Diagnostics" Version="2.3.9" />
     <PackageVersion Include="Microsoft.AspNetCore.Http" Version="2.3.9" />
+    <PackageVersion Include="Microsoft.AspNetCore.Http.Abstractions" Version="2.3.9" />
     <PackageVersion Include="Microsoft.AspNetCore.Mvc" Version="2.3.9" />
     <PackageVersion Include="Microsoft.Extensions.Http.Resilience" Version="10.2.0" />
     <PackageVersion Include="Microsoft.Extensions.ServiceDiscovery" Version="10.2.0" />

@@ -1,4 +1,4 @@
-﻿namespace CineMeoTic.Common.Utils;
+﻿namespace BuildingBlocks.Utils;
 
 public static class MessageException
 {

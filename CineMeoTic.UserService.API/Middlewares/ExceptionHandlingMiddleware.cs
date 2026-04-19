@@ -1,7 +1,7 @@
 ﻿using System.Net;
 using System.Text.Json;
 using BuildingBlocks.Exceptions;
-using CineMeoTic.Common.Utils;
+using BuildingBlocks.Utils;
 using Serilog;
 
 namespace CineMeoTic.UserService.API.Middlewares;

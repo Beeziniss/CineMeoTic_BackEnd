@@ -56,6 +56,7 @@ public static class DependencyInjections
         services.AddSingleton<ICarterModule, AuthenticationEndpoint>();
         services.AddSingleton<ICarterModule, PermissionEndpoint>();
         services.AddSingleton<ICarterModule, RoleEndpoint>();
+        services.AddSingleton<ICarterModule, ProfileEndpoint>();
         services.AddCarter();
     }
 
@@ -78,6 +79,7 @@ public static class DependencyInjections
         services.AddScoped<IRoleService, RoleService>();
         services.AddScoped<IPermissionService, PermissionService>();
         services.AddScoped<IJsonWebTokenService, JsonWebTokenService>();
+        services.AddScoped<IProfileService, ProfileService>();
     }
 
     public static void MapsterExtension(this IServiceCollection services)

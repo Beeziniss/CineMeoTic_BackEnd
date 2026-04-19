@@ -8,7 +8,7 @@ public sealed class PermissionEndpoint : ICarterModule
 {
     public void AddRoutes(IEndpointRouteBuilder app)
     {
-        app.MapPost("/permissions", async (CreatePermissionCommand permissionCommand, ISender sender) =>
+        app.MapPost("api/permissions", async (CreatePermissionCommand permissionCommand, ISender sender) =>
             {
                 await sender.Send(permissionCommand);
 
@@ -16,12 +16,10 @@ public sealed class PermissionEndpoint : ICarterModule
             }
             )
             .WithName("CreatePermission")
-            .Produces(StatusCodes.Status200OK)
-            .ProducesProblem(StatusCodes.Status400BadRequest)
             .WithSummary("Create Permission")
             .WithDescription("Create Permission");
 
-        app.MapPost("/permissions/batch", async (CreatePermissionsCommand permissionsCommand, ISender sender) =>
+        app.MapPost("api/permissions/batch", async (CreatePermissionsCommand permissionsCommand, ISender sender) =>
             {
                 await sender.Send(permissionsCommand);
 
@@ -29,8 +27,6 @@ public sealed class PermissionEndpoint : ICarterModule
             }
             )
             .WithName("CreatePermissions")
-            .Produces(StatusCodes.Status200OK)
-            .ProducesProblem(StatusCodes.Status400BadRequest)
             .WithSummary("Create Permissions")
             .WithDescription("Create Multiple Permissions");
     }
