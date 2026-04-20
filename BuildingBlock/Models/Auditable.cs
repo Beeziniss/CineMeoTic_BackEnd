@@ -1,4 +1,4 @@
-﻿namespace CineMeoTic.Common.Models;
+﻿namespace BuildingBlocks.Models;
 
 public abstract class Auditable : AuditableTimeStamped
 {

@@ -1,4 +1,4 @@
-﻿using CineMeoTic.Common.Models;
+﻿using BuildingBlocks.Models;
 
 namespace Cinemeotic.MovieService.API.Data;
 

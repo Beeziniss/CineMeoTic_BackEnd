@@ -3,17 +3,17 @@ using BuildingBlocks.Utils;
 using CineMeoTic.UserService.API.Data;
 using CineMeoTic.UserService.API.Models.Commands;
 using CineMeoTic.UserService.API.Services.Intefaces;
-using Marten;
+using Microsoft.EntityFrameworkCore;
 
 namespace CineMeoTic.UserService.API.Services.Implements;
 
-public sealed class PermissionService(IDocumentSession documentSession) : IPermissionService
+public sealed class PermissionService(IUserDbContext userDbContext) : IPermissionService
 {
-    private readonly IDocumentSession _documentSession = documentSession;
+    private readonly IUserDbContext _userDbContext = userDbContext;
 
     private async Task CheckPermissionExistAsync(string permissionName, CancellationToken cancellationToken)
     {
-        bool permissionExist = await _documentSession.Query<Permission>().AnyAsync(p => p.Name == permissionName, cancellationToken);
+        bool permissionExist = await _userDbContext.Permission.AsNoTracking().AnyAsync(p => p.Name == permissionName, cancellationToken);
         if (permissionExist)
         {
             throw new BadRequestCustomException(MessageException.PermissionAlreadyExists);
@@ -21,7 +21,7 @@ public sealed class PermissionService(IDocumentSession documentSession) : IPermi
     }
     private async Task CheckPermissionsExistAsync(IEnumerable<string> permissionNames, CancellationToken cancellationToken)
     {
-        bool permissionExists = await _documentSession.Query<Permission>().AnyAsync(p => permissionNames.Contains(p.Name), cancellationToken);
+        bool permissionExists = await _userDbContext.Permission.AsNoTracking().AnyAsync(p => permissionNames.Contains(p.Name), cancellationToken);
         if (permissionExists)
         {
             throw new BadRequestCustomException(MessageException.PermissionsAlreadyExist);
@@ -36,8 +36,8 @@ public sealed class PermissionService(IDocumentSession documentSession) : IPermi
             Name = createPermissionCommand.Name
         };
 
-        _documentSession.Store(permission);
-        await _documentSession.SaveChangesAsync(cancellationToken);
+        _userDbContext.Permission.Add(permission);
+        await _userDbContext.SaveChangesAsync(cancellationToken);
     }
     public async Task CreatePermissionsAsync(CreatePermissionsCommand createPermissionsCommand, CancellationToken cancellationToken)
     {
@@ -54,7 +54,7 @@ public sealed class PermissionService(IDocumentSession documentSession) : IPermi
             permissions.Add(permission);
         }
 
-        _documentSession.Store(permissions.ToArray());
-        await _documentSession.SaveChangesAsync(cancellationToken);
+        _userDbContext.Permission.AddRange(permissions);
+        await _userDbContext.SaveChangesAsync(cancellationToken);
     }
 }

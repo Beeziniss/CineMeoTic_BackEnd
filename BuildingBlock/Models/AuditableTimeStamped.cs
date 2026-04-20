@@ -1,10 +1,10 @@
 ﻿using BuildingBlocks.Utils;
 
-namespace CineMeoTic.Common.Models;
+namespace BuildingBlocks.Models;
 
 public abstract class AuditableTimeStamped
 {
-    public DateTimeOffset CreatedAt { get; set; } = CustomTimeProvider.GetUtcPlus7TimeOffset();
+    public DateTimeOffset CreatedAt { get; set; } = CustomTimeProvider.UtcNow;
     public DateTimeOffset? UpdatedAt { get; set; }
     public DateTimeOffset? DeletedAt { get; set; }
 }

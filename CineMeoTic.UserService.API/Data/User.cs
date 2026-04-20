@@ -1,4 +1,4 @@
-﻿using CineMeoTic.Common.Models;
+﻿using BuildingBlocks.Models;
 using CineMeoTic.UserService.API.Data.Enums;
 
 namespace CineMeoTic.UserService.API.Data;

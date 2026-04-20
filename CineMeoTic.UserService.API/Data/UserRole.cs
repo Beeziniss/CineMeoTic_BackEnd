@@ -1,5 +1,3 @@
-using CineMeoTic.Common.Models;
-
 namespace CineMeoTic.UserService.API.Data;
 
 public sealed class UserRole

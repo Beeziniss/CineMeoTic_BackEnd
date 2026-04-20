@@ -7,14 +7,12 @@ using Cinemeotic.MovieService.API.Data.Enums;
 using FluentValidation;
 using Mapster;
 using MapsterMapper;
-using Marten;
 using MediatR;
 using Microsoft.AspNetCore.Authentication.Google;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using System.Security.Claims;
 using System.Text;
-using Weasel.Core;
 
 namespace Cinemeotic.MovieService.API;
 
@@ -218,30 +216,30 @@ public static class DependencyInjections
 
     public static void AddDatabase(this IServiceCollection services) 
     {
-        services.AddMarten(options =>
-        {
-            options.Connection(Environment.GetEnvironmentVariable("POSTGRES_CONNECTION_STRING") ?? throw new UnconfiguredEnvironmentCustomException("POSTGRES_CONNECTION_STRING is not set in the environment"));
-            options.Schema.For<Movie>().Identity(m => m.Id);
-            options.Schema.For<Genre>().Identity(g => g.Id);
-            options.Schema.For<MovieCredit>()
-                .Identity(mc => mc.Id)
-                .Duplicate(mc => mc.Role);
-            options.Schema.For<Comment>()
-                .Identity(c => c.Id)
-                .Duplicate(c => c.MovieId)
-                .Duplicate(c => c.UserId)
-                .Duplicate(c => c.ParentCommentId)
-                .Duplicate(c => c.RootCommentId);
-            options.Schema.For<MovieRating>()
-                .Identity(r => r.Id)
-                .Duplicate(r => r.MovieId)
-                .Duplicate(r => r.UserId);
-            options.DatabaseSchemaName = Environment.GetEnvironmentVariable("POSTGRES_DB_SCHEMA") ?? throw new UnconfiguredEnvironmentCustomException("POSTGRES_DB_SCHEMA is not set in the environment");
-            options.UseSystemTextJsonForSerialization(enumStorage: EnumStorage.AsString, configure: serializerOptions =>
-            {
-                serializerOptions.Converters.Add(new EnumMemberJsonConverter<Role>());
-            });
-            options.AutoRegister();
-        }).UseLightweightSessions();
+        //services.AddMarten(options =>
+        //{
+        //    options.Connection(Environment.GetEnvironmentVariable("POSTGRES_CONNECTION_STRING") ?? throw new UnconfiguredEnvironmentCustomException("POSTGRES_CONNECTION_STRING is not set in the environment"));
+        //    options.Schema.For<Movie>().Identity(m => m.Id);
+        //    options.Schema.For<Genre>().Identity(g => g.Id);
+        //    options.Schema.For<MovieCredit>()
+        //        .Identity(mc => mc.Id)
+        //        .Duplicate(mc => mc.Role);
+        //    options.Schema.For<Comment>()
+        //        .Identity(c => c.Id)
+        //        .Duplicate(c => c.MovieId)
+        //        .Duplicate(c => c.UserId)
+        //        .Duplicate(c => c.ParentCommentId)
+        //        .Duplicate(c => c.RootCommentId);
+        //    options.Schema.For<MovieRating>()
+        //        .Identity(r => r.Id)
+        //        .Duplicate(r => r.MovieId)
+        //        .Duplicate(r => r.UserId);
+        //    options.DatabaseSchemaName = Environment.GetEnvironmentVariable("POSTGRES_DB_SCHEMA") ?? throw new UnconfiguredEnvironmentCustomException("POSTGRES_DB_SCHEMA is not set in the environment");
+        //    options.UseSystemTextJsonForSerialization(enumStorage: EnumStorage.AsString, configure: serializerOptions =>
+        //    {
+        //        serializerOptions.Converters.Add(new EnumMemberJsonConverter<Role>());
+        //    });
+        //    options.AutoRegister();
+        //}).UseLightweightSessions();
     }
 }

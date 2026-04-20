@@ -3,17 +3,17 @@ using BuildingBlocks.Utils;
 using CineMeoTic.UserService.API.Data;
 using CineMeoTic.UserService.API.Models.Commands;
 using CineMeoTic.UserService.API.Services.Intefaces;
-using Marten;
+using Microsoft.EntityFrameworkCore;
 
 namespace CineMeoTic.UserService.API.Services.Implements;
 
-public sealed class RoleService(IDocumentStore documentStore) : IRoleService
+public sealed class RoleService(IUserDbContext userDbContext) : IRoleService
 {
-    private readonly IDocumentStore _documentStore = documentStore;
+    private readonly IUserDbContext _userDbContext = userDbContext;
 
-    private static async Task CheckRoleExistAsync(IDocumentSession documentSession, string roleName, CancellationToken cancellationToken)
+    private static async Task CheckRoleExistAsync(IUserDbContext userDbContext, string roleName, CancellationToken cancellationToken)
     {
-        bool roleExists = await documentSession.Query<Role>().AnyAsync(r => r.Name == roleName, cancellationToken);
+        bool roleExists = await userDbContext.Role.AsNoTracking().AnyAsync(r => r.Name == roleName, cancellationToken);
         if (roleExists)
         {
             throw new BadRequestCustomException(MessageException.RoleAlreadyExists);
@@ -21,34 +21,30 @@ public sealed class RoleService(IDocumentStore documentStore) : IRoleService
     }
     public async Task CreateRoleAsync(CreateRoleCommand roleCommand, CancellationToken cancellationToken)
     {
-        using IDocumentSession documentSession = _documentStore.LightweightSession();
-
-        await CheckRoleExistAsync(documentSession, roleCommand.RoleName, cancellationToken);
+        await CheckRoleExistAsync(_userDbContext, roleCommand.RoleName, cancellationToken);
 
         Role role = new()
         {
+            Id = Guid.NewGuid(),
             Name = roleCommand.RoleName,
         };
 
-        IReadOnlyCollection<Permission> permissions = await documentSession.Query<Permission>()
+        IReadOnlyCollection<Permission> permissions = await _userDbContext.Permission
+            .AsNoTracking()
             .Where(p => roleCommand.PermissionNames.Contains(p.Name))
             .ToListAsync(cancellationToken);
 
-        documentSession.Store(role);
-
-        RolePermission[] rolePermissions = permissions
+        IEnumerable<RolePermission> rolePermissions = permissions
             .Select(permission => new RolePermission
             {
                 RoleId = role.Id,
                 PermissionId = permission.Id,
             })
-            .ToArray();
+            .ToList();
 
-        if (rolePermissions.Length > 0)
-        {
-            documentSession.Store(rolePermissions);
-        }
+        _userDbContext.Role.Add(role);
+        _userDbContext.RolePermission.AddRange(rolePermissions);
 
-        await documentSession.SaveChangesAsync(cancellationToken);
+        await _userDbContext.SaveChangesAsync(cancellationToken);
     }
 }

@@ -1,5 +1,5 @@
-﻿using Cinemeotic.MovieService.API.Data.Enums;
-using CineMeoTic.Common.Models;
+﻿using BuildingBlocks.Models;
+using Cinemeotic.MovieService.API.Data.Enums;
 
 namespace Cinemeotic.MovieService.API.Data;
 

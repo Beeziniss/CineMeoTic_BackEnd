@@ -5,31 +5,34 @@ using CineMeoTic.UserService.API.Models;
 using CineMeoTic.UserService.API.Models.Queries;
 using CineMeoTic.UserService.API.Services.Intefaces;
 using Mapster;
-using Marten;
+using Microsoft.EntityFrameworkCore;
 
 namespace CineMeoTic.UserService.API.Services.Implements;
 
-public sealed class ProfileService(IDocumentSession documentSession, IHttpContextAccessor httpContextAccessor) : IProfileService
+public sealed class ProfileService(IUserDbContext userDbContext, IHttpContextAccessor httpContextAccessor) : IProfileService
 {
-    private readonly IDocumentSession _documentSession = documentSession;
+    private readonly IUserDbContext _userDbContext = userDbContext;
     private readonly IHttpContextAccessor _httpContextAccessor = httpContextAccessor;
 
     public async Task<UserInfoQueryResult> GetUserInfoAsync(CancellationToken cancellationToken)
     {
         Guid userId = _httpContextAccessor.GetUserId();
 
-        UserInfoResponse userInfoResponse = await _documentSession.Query<User>()
+        UserInfoResponse userInfoResponse = await _userDbContext.User
+            .AsNoTracking()
             .Where(u => u.Id == userId)
             .ProjectToType<UserInfoResponse>()
             .FirstOrDefaultAsync(cancellationToken)
             ?? throw new BadRequestCustomException(MessageException.UserNotFound);
 
-        IReadOnlyCollection<string> roleNames = await _documentSession.Query<Role>()
-            .Where(r => _documentSession.Query<UserRole>()
-                .Where(ur => ur.UserId == userInfoResponse.Id)
-                .Select(ur => ur.RoleId)
-                .Contains(r.Id))
-            .Select(r => r.Name)
+        IReadOnlyCollection<string> roleNames = await _userDbContext.UserRole
+            .AsNoTracking()
+            .Where(ur => ur.UserId == userInfoResponse.Id)
+            .Join(
+                _userDbContext.Role.AsNoTracking(),
+                ur => ur.RoleId,
+                r => r.Id,
+                (_, r) => r.Name)
             .Distinct()
             .ToListAsync(cancellationToken);
 

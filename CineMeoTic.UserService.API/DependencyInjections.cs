@@ -3,7 +3,6 @@ using BuildingBlocks.Exceptions;
 using BuildingBlocks.Exceptions.Handler;
 using Carter;
 using CineMeoTic.UserService.API.Data;
-using CineMeoTic.UserService.API.Data.Enums;
 using CineMeoTic.UserService.API.Endpoints;
 using CineMeoTic.UserService.API.Services;
 using CineMeoTic.UserService.API.Services.Implements;
@@ -11,15 +10,15 @@ using CineMeoTic.UserService.API.Services.Intefaces;
 using FluentValidation;
 using Mapster;
 using MapsterMapper;
-using Marten;
 using MediatR;
 using Microsoft.AspNetCore.Authentication.Google;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
+using Microsoft.OpenApi;
 using System.Reflection;
 using System.Security.Claims;
 using System.Text;
-using Weasel.Core;
 
 namespace CineMeoTic.UserService.API;
 
@@ -48,7 +47,26 @@ public static class DependencyInjections
     public static void AddOpenApiExtension(this IServiceCollection services)
     {
         // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
-        services.AddOpenApi();
+        services.AddOpenApi(options =>
+        {
+            options.AddDocumentTransformer((document, context, cancellationToken) =>
+            {
+                document.Components ??= new();
+                document.Components.SecuritySchemes ??= new Dictionary<string, IOpenApiSecurityScheme>();
+
+                document.Components.SecuritySchemes["Bearer"] = new OpenApiSecurityScheme
+                {
+                    Type = SecuritySchemeType.Http,
+                    Scheme = "bearer",
+                    BearerFormat = "JWT",
+                    In = ParameterLocation.Header,
+                    Name = "Authorization",
+                    Description = "Enter JWT token"
+                };
+
+                return Task.CompletedTask;
+            });
+        });
     }
 
     public static void AddCarterExtension(this IServiceCollection services)
@@ -122,7 +140,7 @@ public static class DependencyInjections
 
                 //ký vào token
                 ValidateIssuerSigningKey = true,
-                IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(Environment.GetEnvironmentVariable("JWT_SECRET_KEY") ?? throw new Exception("JWT's Secret CancelMode property is not set in environment or not found"))),
+                IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(Environment.GetEnvironmentVariable("JWT_SECRET_KEY") ?? throw new UnconfiguredEnvironmentCustomException("JWT's Secret Key property is not set in environment or not found"))),
 
                 ClockSkew = TimeSpan.Zero,
 
@@ -135,6 +153,18 @@ public static class DependencyInjections
             {
                 OnMessageReceived = context =>
                 {
+
+                    // Nếu token không có trong header Authorization, kiểm tra query string và cookie
+                    // Lưu ý: Việc này chỉ nên thực hiện nếu chắc chắn rằng các endpoint sẽ không bị lạm dụng, vì việc chấp nhận token từ query string có thể
+                    // Dành cho testing hoặc các trường hợp đặc biệt như SignalR, nhưng không nên áp dụng rộng rãi cho tất cả các endpoint trong môi trường production mà không có biện pháp bảo vệ bổ sung.
+                    //if (string.IsNullOrWhiteSpace(context.Token) &&
+                    //    context.Request.Cookies.TryGetValue("access_token", out string? cookieToken) &&
+                    //    !string.IsNullOrWhiteSpace(cookieToken))
+                    //{
+                    //    context.Token = cookieToken;
+                    //    return Task.CompletedTask;
+                    //}
+
                     // Lấy origin từ request
                     string? origin = context.Request.Headers.Origin;
 
@@ -152,9 +182,19 @@ public static class DependencyInjections
                         return Task.CompletedTask;
                     }
 
-                    // Query chứa token, sử dụng nó
+                    // Query/Cookie chứa token, sử dụng nó
                     string? accessToken = context.Request.Query["access_token"];
                     PathString path = context.HttpContext.Request.Path;
+
+                    if (!string.IsNullOrWhiteSpace(accessToken))
+                    {
+                        context.Token = accessToken;
+                    }
+
+                    //if (!string.IsNullOrEmpty(cookieToken))
+                    //{
+                    //    context.Token = cookieToken;
+                    //}
 
                     // Các segment được bảo mật
                     //IEnumerable<string> securedSegments = new[]
@@ -169,10 +209,6 @@ public static class DependencyInjections
                     //    securedSegments.Any(segment => path.StartsWithSegments(segment, StringComparison.Ordinal)))
                     //{
                     //}
-                    if (!string.IsNullOrWhiteSpace(accessToken))
-                    {
-                        context.Token = accessToken;
-                    }
 
                     return Task.CompletedTask;
                 }
@@ -201,11 +237,17 @@ public static class DependencyInjections
 
     public static void AddAuthorizationExtension(this IServiceCollection services)
     {
-        services.AddAuthorizationBuilder().AddPolicy("GoogleOrJwt", policy =>
-        {
-            policy.AddAuthenticationSchemes(GoogleDefaults.AuthenticationScheme, JwtBearerDefaults.AuthenticationScheme);
-            policy.RequireAuthenticatedUser();
-        });
+        services.AddAuthorizationBuilder()
+            .AddPolicy("jwt", policy =>
+            {
+                policy.AddAuthenticationSchemes(JwtBearerDefaults.AuthenticationScheme);
+                policy.RequireAuthenticatedUser();
+            })
+            .AddPolicy("GoogleOrJwt", policy =>
+            {
+                policy.AddAuthenticationSchemes(GoogleDefaults.AuthenticationScheme, JwtBearerDefaults.AuthenticationScheme);
+                policy.RequireAuthenticatedUser();
+            });
     }
 
     public static void AddCorsExtension(this IServiceCollection services)
@@ -226,26 +268,11 @@ public static class DependencyInjections
 
     public static void AddDatabase(this IServiceCollection services)
     {
-        services.AddMarten(options =>
+        services.AddDbContextPool<UserDbContext>(options =>
         {
-            options.Connection(Environment.GetEnvironmentVariable("POSTGRES_CONNECTION_STRING") ?? throw new UnconfiguredEnvironmentCustomException("POSTGRES_CONNECTION_STRING is not set in the environment"));
-            options.Schema.For<User>().Identity(u => u.Id);
-            options.Schema.For<Role>().Identity(r => r.Id);
-            options.Schema.For<Permission>().Identity(p => p.Id);
-            options.Schema.For<UserRole>()
-                .Identity(ur => ur.Id)
-                .Duplicate(ur => ur.UserId)
-                .Duplicate(ur => ur.RoleId);
-            options.Schema.For<RolePermission>()
-                .Identity(rp => rp.Id)
-                .Duplicate(rp => rp.RoleId)
-                .Duplicate(rp => rp.PermissionId);
-            options.DatabaseSchemaName = Environment.GetEnvironmentVariable("POSTGRES_DB_SCHEMA") ?? throw new UnconfiguredEnvironmentCustomException("POSTGRES_DB_SCHEMA is not set in the environment");
-            options.UseSystemTextJsonForSerialization(enumStorage: EnumStorage.AsString, configure: serializerOptions =>
-                {
-                    serializerOptions.Converters.Add(new EnumMemberJsonConverter<Gender>());
-                });
-            options.AutoRegister();
-        }).UseLightweightSessions();
+            options.UseNpgsql(Environment.GetEnvironmentVariable("POSTGRES_CONNECTION_STRING") ?? throw new UnconfiguredEnvironmentCustomException("POSTGRES_CONNECTION_STRING is not set in the environment"));
+        });
+
+        services.AddScoped<IUserDbContext>(provider => provider.GetRequiredService<UserDbContext>());
     }
 }
