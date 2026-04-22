@@ -1,4 +1,5 @@
-﻿using Carter;
+﻿using BuildingBlocks.Utils;
+using Carter;
 using CineMeoTic.UserService.API.Models.Commands;
 using MediatR;
 
@@ -15,7 +16,7 @@ public sealed class RoleEndpoint : ICarterModule
                 return Results.Ok();
             }
         )
-        .RequireAuthorization("admin")
+        .RequireRoles("Admin")
         .WithName("CreateRole")
         .WithSummary("Create Role")
         .WithDescription("Create Role");

@@ -5,7 +5,7 @@ using System.Security.Claims;
 
 namespace BuildingBlocks.Utils;
 
-public static class HttpContextAccessorHelper
+public static class HttpContextAccessorExtension
 {
     public static Guid GetUserId(this IHttpContextAccessor httpContextAccessor)
     {

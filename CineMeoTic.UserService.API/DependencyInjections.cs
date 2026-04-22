@@ -13,6 +13,7 @@ using MapsterMapper;
 using MediatR;
 using Microsoft.AspNetCore.Authentication.Google;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi;
@@ -234,31 +235,7 @@ public static class DependencyInjections
 
     public static void AddAuthorizationExtension(this IServiceCollection services)
     {
-        // TODO: Should we add policy for each role here? For example, if we have 10 roles, should we add 10 policies here? Or should we just add a policy that requires the user to have any of the roles in the database? If we just add a policy that requires the user to have any of the roles in the database, how can we implement it? Should we create a custom authorization handler that checks if the user has any of the roles in the database?
-        services.AddAuthorizationBuilder()
-            .AddPolicy("viewer", policy =>
-            {
-                policy.AddAuthenticationSchemes(JwtBearerDefaults.AuthenticationScheme);
-                policy.RequireAuthenticatedUser();
-                policy.RequireRole("Viewer");
-            })
-            .AddPolicy("admin", policy =>
-            {
-                policy.AddAuthenticationSchemes(JwtBearerDefaults.AuthenticationScheme);
-                policy.RequireAuthenticatedUser();
-                policy.RequireRole("Admin");
-            })
-            .AddPolicy("all", policy =>
-            {
-                policy.AddAuthenticationSchemes(JwtBearerDefaults.AuthenticationScheme);
-                policy.RequireAuthenticatedUser();
-                policy.RequireRole("Viewer", "Admin");
-            })
-            .AddPolicy("GoogleOrJwt", policy =>
-            {
-                policy.AddAuthenticationSchemes(GoogleDefaults.AuthenticationScheme, JwtBearerDefaults.AuthenticationScheme);
-                policy.RequireAuthenticatedUser();
-            });
+        services.AddAuthorizationBuilder();
     }
 
     public static void AddCorsExtension(this IServiceCollection services)
@@ -281,6 +258,7 @@ public static class DependencyInjections
     {
         services.AddDbContextPool<UserDbContext>(options =>
         {
+            options.UseQueryTrackingBehavior(QueryTrackingBehavior.NoTracking);
             options.UseNpgsql(Environment.GetEnvironmentVariable("POSTGRES_CONNECTION_STRING") ?? throw new UnconfiguredEnvironmentCustomException("POSTGRES_CONNECTION_STRING is not set in the environment"));
         });
 

@@ -10,6 +10,6 @@ namespace CineMeoTic.UserService.API.Data
         public DbSet<UserRole> UserRole { get; }
         public DbSet<RolePermission> RolePermission { get; }
 
-    Task<int> SaveChangesAsync(CancellationToken cancellationToken);
+        Task<int> SaveChangesAsync(CancellationToken cancellationToken);
     }
 }

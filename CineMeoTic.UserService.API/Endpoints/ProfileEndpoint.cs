@@ -1,4 +1,5 @@
-﻿using Carter;
+﻿using BuildingBlocks.Utils;
+using Carter;
 using CineMeoTic.UserService.API.Models.Queries;
 using MediatR;
 
@@ -14,7 +15,7 @@ public sealed class ProfileEndpoint : ICarterModule
                 return Results.Ok(result);
             }
         )
-        .RequireAuthorization("all")
+        .RequireRoles("Viewer", "Admin")
         .WithName("GetUserProfile")
         .WithSummary("Get User Profile")
         .WithDescription("Get User Profile");

@@ -1,4 +1,5 @@
-﻿using Carter;
+﻿using BuildingBlocks.Utils;
+using Carter;
 using CineMeoTic.UserService.API.Models.Commands;
 using MediatR;
 
@@ -15,7 +16,7 @@ public sealed class PermissionEndpoint : ICarterModule
                 return Results.Ok();
             }
             )
-            .RequireAuthorization("admin")
+            .RequireRoles("Admin")
             .WithName("CreatePermission")
             .WithSummary("Create Permission")
             .WithDescription("Create Permission");
@@ -27,7 +28,7 @@ public sealed class PermissionEndpoint : ICarterModule
                 return Results.Ok();
             }
             )
-            .RequireAuthorization("admin")
+            .RequireRoles("Admin")
             .WithName("CreatePermissions")
             .WithSummary("Create Permissions")
             .WithDescription("Create Multiple Permissions");
