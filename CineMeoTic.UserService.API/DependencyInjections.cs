@@ -16,6 +16,7 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi;
+using StackExchange.Redis;
 using System.Reflection;
 using System.Security.Claims;
 using System.Text;
@@ -26,6 +27,7 @@ public static class DependencyInjections
 {
     public static void AddDependencyInjections(this IServiceCollection services)
     {
+        services.AddRedisCacheExtension();
         services.AddCustomExceptionHandlerExtension();
         services.AddOpenApiExtension();
         services.AddCarterExtension();
@@ -37,6 +39,31 @@ public static class DependencyInjections
         services.AddAuthorizationExtension();
         services.AddCorsExtension();
         services.AddDatabase();
+    }
+
+    public static void AddRedisCacheExtension(this IServiceCollection services)
+    {
+        services.AddSingleton<IConnectionMultiplexer>(provider =>
+        {
+            string endpoint = Environment.GetEnvironmentVariable("REDIS_END_POINTS") ?? throw new UnconfiguredEnvironmentCustomException("REDIS_END_POINTS is not set in the environment");
+            int port = int.Parse(Environment.GetEnvironmentVariable("REDIS_PORT") ?? throw new UnconfiguredEnvironmentCustomException("REDIS_PORT is not set in the environment"));
+            string user = Environment.GetEnvironmentVariable("REDIS_USER") ?? throw new UnconfiguredEnvironmentCustomException("REDIS_USER is not set in the environment");
+            string password = Environment.GetEnvironmentVariable("REDIS_PASSWORD") ?? throw new UnconfiguredEnvironmentCustomException("REDIS_PASSWORD is not set in the environment");
+
+            ConfigurationOptions options = new()
+            {
+                EndPoints = { { endpoint, port } },
+                User = user,
+                Password = password,
+                Ssl = false,
+                AbortOnConnectFail = true,
+                ConnectRetry = 3,
+            };
+
+            return ConnectionMultiplexer.Connect(options);
+        });
+
+        services.AddScoped<IRedisCacheService, RedisCacheService>();
     }
 
     public static void AddCustomExceptionHandlerExtension(this IServiceCollection services)
@@ -144,78 +171,48 @@ public static class DependencyInjections
 
                 ClockSkew = TimeSpan.Zero,
 
-                // Đặt RoleClaimType
+                // Set RoleClaimType
                 RoleClaimType = ClaimTypes.Role
             };
 
-            // Cấu hình SignalR để đọc token
-            opt.Events = new JwtBearerEvents
-            {
-                OnMessageReceived = context =>
-                {
+            // Event for extracting token from query string for WebSocket connections (if needed)
+            //opt.Events = new JwtBearerEvents
+            //{
+            //    OnMessageReceived = context =>
+            //    {
 
-                    // Nếu token không có trong header Authorization, kiểm tra query string và cookie
-                    // Lưu ý: Việc này chỉ nên thực hiện nếu chắc chắn rằng các endpoint sẽ không bị lạm dụng, vì việc chấp nhận token từ query string có thể
-                    // Dành cho testing hoặc các trường hợp đặc biệt như SignalR, nhưng không nên áp dụng rộng rãi cho tất cả các endpoint trong môi trường production mà không có biện pháp bảo vệ bổ sung.
-                    //if (string.IsNullOrWhiteSpace(context.Token) &&
-                    //    context.Request.Cookies.TryGetValue("access_token", out string? cookieToken) &&
-                    //    !string.IsNullOrWhiteSpace(cookieToken))
-                    //{
-                    //    context.Token = cookieToken;
-                    //    return Task.CompletedTask;
-                    //}
+            //        // Lấy origin từ request
+            //        string? origin = context.Request.Headers.Origin;
 
-                    // Lấy origin từ request
-                    string? origin = context.Request.Headers.Origin;
+            //        // Các origin được phép truy cập
+            //        IEnumerable<string> securedOrigins = new[]
+            //        {
+            //            Environment.GetEnvironmentVariable("FRONTEND_LOCAL_URL") ?? throw new UnconfiguredEnvironmentCustomException("FRONTEND_LOCAL_URL is not set in the environment"),
+            //            Environment.GetEnvironmentVariable("FRONTEND_URL") ?? throw new UnconfiguredEnvironmentCustomException("FRONTEND_URL is not set in the environment"),
+            //            Environment.GetEnvironmentVariable("BACKEND_URL") ?? throw new UnconfiguredEnvironmentCustomException("BACKEND_URL is not set in the environment")
+            //        }.Where(origin => !string.IsNullOrWhiteSpace(origin));
 
-                    // Các origin được phép truy cập
-                    IEnumerable<string> securedOrigins = new[]
-                    {
-                        Environment.GetEnvironmentVariable("FRONTEND_LOCAL_URL") ?? throw new UnconfiguredEnvironmentCustomException("FRONTEND_LOCAL_URL is not set in the environment"),
-                        Environment.GetEnvironmentVariable("FRONTEND_URL") ?? throw new UnconfiguredEnvironmentCustomException("FRONTEND_URL is not set in the environment"),
-                        Environment.GetEnvironmentVariable("BACKEND_URL") ?? throw new UnconfiguredEnvironmentCustomException("BACKEND_URL is not set in the environment")
-                    }.Where(origin => !string.IsNullOrWhiteSpace(origin));
+            //        // Kiểm tra xem origin có trong danh sách được phép không
+            //        if (string.IsNullOrWhiteSpace(origin) || !securedOrigins.Any(securedOrigin => securedOrigin is not null && securedOrigin.Equals(origin, StringComparison.Ordinal)))
+            //        {
+            //            return Task.CompletedTask;
+            //        }
 
-                    // Kiểm tra xem origin có trong danh sách được phép không
-                    if (string.IsNullOrWhiteSpace(origin) || !securedOrigins.Any(securedOrigin => securedOrigin is not null && securedOrigin.Equals(origin, StringComparison.Ordinal)))
-                    {
-                        return Task.CompletedTask;
-                    }
+            //        // Query/Cookie chứa token, sử dụng nó
+            //        string? accessToken = context.Request.Query["access_token"];
+            //        PathString path = context.HttpContext.Request.Path;
 
-                    // Query/Cookie chứa token, sử dụng nó
-                    string? accessToken = context.Request.Query["access_token"];
-                    PathString path = context.HttpContext.Request.Path;
+            //        if (!string.IsNullOrWhiteSpace(accessToken))
+            //        {
+            //            context.Token = accessToken;
+            //        }
 
-                    if (!string.IsNullOrWhiteSpace(accessToken))
-                    {
-                        context.Token = accessToken;
-                    }
-
-                    //if (!string.IsNullOrEmpty(cookieToken))
-                    //{
-                    //    context.Token = cookieToken;
-                    //}
-
-                    // Các segment được bảo mật
-                    //IEnumerable<string> securedSegments = new[]
-                    //{
-                    //    Environment.GetEnvironmentVariable("EKOFY_SIGNALR_CHAT_URL") ?? throw new UnconfiguredEnvironmentCustomException("Not set EKOFY_SIGNALR_CHAT_URL in the environment"),
-                    //    Environment.GetEnvironmentVariable("EKOFY_SIGNALR_NOTIFICATION_URL")?? throw new UnconfiguredEnvironmentCustomException("Not set EKOFY_SIGNALR_NOTIFICATION_URL in the environment"),
-                    //}
-                    //.Where(url => !string.IsNullOrWhiteSpace(url))
-                    //.Select(url => new Uri(url!).AbsolutePath); // <-- Chỉ lấy phần path, ví dụ "/hub/chat"
-
-                    //if (!string.IsNullOrWhiteSpace(accessToken) &&
-                    //    securedSegments.Any(segment => path.StartsWithSegments(segment, StringComparison.Ordinal)))
-                    //{
-                    //}
-
-                    return Task.CompletedTask;
-                }
-            };
+            //        return Task.CompletedTask;
+            //    }
+            //};
 
             // Remove "Bearer " prefix
-            // Chỉ remove Bearer prefix khi đang trong môi trường phát triển hoặc debug
+            // Remove only if the token is present without "Bearer" prefix in development environment or debug mode
             //opt.Events = new JwtBearerEvents
             //{
             //    OnMessageReceived = context =>
@@ -237,11 +234,25 @@ public static class DependencyInjections
 
     public static void AddAuthorizationExtension(this IServiceCollection services)
     {
+        // TODO: Should we add policy for each role here? For example, if we have 10 roles, should we add 10 policies here? Or should we just add a policy that requires the user to have any of the roles in the database? If we just add a policy that requires the user to have any of the roles in the database, how can we implement it? Should we create a custom authorization handler that checks if the user has any of the roles in the database?
         services.AddAuthorizationBuilder()
-            .AddPolicy("jwt", policy =>
+            .AddPolicy("viewer", policy =>
             {
                 policy.AddAuthenticationSchemes(JwtBearerDefaults.AuthenticationScheme);
                 policy.RequireAuthenticatedUser();
+                policy.RequireRole("Viewer");
+            })
+            .AddPolicy("admin", policy =>
+            {
+                policy.AddAuthenticationSchemes(JwtBearerDefaults.AuthenticationScheme);
+                policy.RequireAuthenticatedUser();
+                policy.RequireRole("Admin");
+            })
+            .AddPolicy("all", policy =>
+            {
+                policy.AddAuthenticationSchemes(JwtBearerDefaults.AuthenticationScheme);
+                policy.RequireAuthenticatedUser();
+                policy.RequireRole("Viewer", "Admin");
             })
             .AddPolicy("GoogleOrJwt", policy =>
             {

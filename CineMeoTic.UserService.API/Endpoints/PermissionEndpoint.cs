@@ -15,6 +15,7 @@ public sealed class PermissionEndpoint : ICarterModule
                 return Results.Ok();
             }
             )
+            .RequireAuthorization("admin")
             .WithName("CreatePermission")
             .WithSummary("Create Permission")
             .WithDescription("Create Permission");
@@ -26,6 +27,7 @@ public sealed class PermissionEndpoint : ICarterModule
                 return Results.Ok();
             }
             )
+            .RequireAuthorization("admin")
             .WithName("CreatePermissions")
             .WithSummary("Create Permissions")
             .WithDescription("Create Multiple Permissions");

@@ -15,6 +15,7 @@ public sealed class RoleEndpoint : ICarterModule
                 return Results.Ok();
             }
         )
+        .RequireAuthorization("admin")
         .WithName("CreateRole")
         .WithSummary("Create Role")
         .WithDescription("Create Role");

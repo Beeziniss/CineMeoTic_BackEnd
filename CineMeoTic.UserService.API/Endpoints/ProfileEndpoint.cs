@@ -14,7 +14,7 @@ public sealed class ProfileEndpoint : ICarterModule
                 return Results.Ok(result);
             }
         )
-        .RequireAuthorization("jwt")
+        .RequireAuthorization("all")
         .WithName("GetUserProfile")
         .WithSummary("Get User Profile")
         .WithDescription("Get User Profile");

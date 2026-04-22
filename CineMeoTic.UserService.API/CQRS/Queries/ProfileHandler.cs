@@ -2,7 +2,7 @@
 using CineMeoTic.UserService.API.Models.Queries;
 using CineMeoTic.UserService.API.Services.Intefaces;
 
-namespace CineMeoTic.UserService.API.CQRS.Queries;
+namespace CineMeoTic.UserService.API.Models.Queries;
 
 public sealed class ProfileHandler(IProfileService profileService) :
     IQueryHandler<NoArgumentQuery, UserInfoQueryResult>

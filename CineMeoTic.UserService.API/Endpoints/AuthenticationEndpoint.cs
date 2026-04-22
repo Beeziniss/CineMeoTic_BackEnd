@@ -26,9 +26,16 @@ public sealed class AuthenticationEndpoint : ICarterModule
            }
            )
             .WithName("RegisterUser")
-            .Produces(StatusCodes.Status200OK)
-            .ProducesProblem(StatusCodes.Status400BadRequest)
             .WithSummary("Register User")
             .WithDescription("Register User");
+
+        app.MapPost("api/refresh-token", async (ISender sender) =>
+            {
+                LoginCommandResult result = await sender.Send(new NoArgumentCommand());
+                return Results.Ok(result);
+            })
+            .WithName("RefreshToken")
+            .WithSummary("Refresh Access Token")
+            .WithDescription("Refresh Access Token");
     }
 }

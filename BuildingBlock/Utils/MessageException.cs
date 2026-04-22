@@ -35,9 +35,11 @@ public static class MessageException
     public const string ViewerNotFound = "Viewer not found.";
     public const string PermissionNotFound = "Permission not found.";
     public static string PermissionNotFoundMethod(string permissionName) => $"Permission {permissionName} not found";
+    public const string RefreshTokenNotFound = "Refresh token not found.";
     #endregion
 
     public const string UnAuthenticated = "Unauthenticated access.";
     public const string Unauthorized = "Unauthorized access.";
     public const string Forbidden = "Forbidden access.";
+    public const string InvalidRefreshToken = "Invalid refresh token.";
 }

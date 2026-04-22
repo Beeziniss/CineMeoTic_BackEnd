@@ -1,4 +1,5 @@
 ﻿using BuildingBlocks.Exceptions;
+using BuildingBlocks.Exceptions.Handler;
 using BuildingBlocks.Utils;
 using CineMeoTic.UserService.API.Data;
 using CineMeoTic.UserService.API.Models;
@@ -10,11 +11,12 @@ using System.Security.Claims;
 
 namespace CineMeoTic.UserService.API.Services.Implements;
 
-public sealed class AuthenticatationService(IHttpContextAccessor httpContextAccessor, IUserDbContext userDbContext, IJsonWebTokenService jsonWebTokenService) : IAuthenticationService
+public sealed class AuthenticatationService(IHttpContextAccessor httpContextAccessor, IUserDbContext userDbContext, IJsonWebTokenService jsonWebTokenService, IRedisCacheService redisCacheService) : IAuthenticationService
 {
     private readonly IHttpContextAccessor _httpContextAccessor = httpContextAccessor;
     private readonly IUserDbContext _userDbContext = userDbContext;
     private readonly IJsonWebTokenService _jsonWebTokenService = jsonWebTokenService;
+    private readonly IRedisCacheService _redisCacheService = redisCacheService;
 
     private static async Task CheckEmailExistAsync(IUserDbContext userDbContext, string email, CancellationToken cancellationToken)
     {
@@ -71,13 +73,11 @@ public sealed class AuthenticatationService(IHttpContextAccessor httpContextAcce
         string token = _jsonWebTokenService.GenerateAccessToken(claims);
         string refreshToken = _jsonWebTokenService.GenerateRefreshToken();
 
-        // TODO: Save refresh token to Redis
-
         CookieOptions cookieOptions = new()
         {
             Secure = true,
             HttpOnly = true,
-            SameSite = SameSiteMode.None
+            SameSite = SameSiteMode.Strict
         };
 
         if (command.IsRememberMe)
@@ -85,12 +85,12 @@ public sealed class AuthenticatationService(IHttpContextAccessor httpContextAcce
             cookieOptions.MaxAge = TimeSpan.FromDays(7);
         }
 
-        _httpContextAccessor.HttpContext?.Response.Cookies.Append("access_token", token, cookieOptions);
+        _httpContextAccessor.HttpContext?.Response.Cookies.Append("refresh_token", refreshToken, cookieOptions);
+        await _redisCacheService.SetStringAsync($"refresh_token:{userAuthInfoResponse.Id}", refreshToken, TimeSpan.FromDays(30));
 
         return new LoginCommandResult
         {
-            AccessToken = token,
-            RefreshToken = refreshToken
+            AccessToken = token
         };
     }
 
@@ -122,5 +122,28 @@ public sealed class AuthenticatationService(IHttpContextAccessor httpContextAcce
         await _userDbContext.SaveChangesAsync(cancellationToken);
 
         return;
+    }
+
+    public async Task<LoginCommandResult> RefreshTokenAsync()
+    {
+        string refreshTokenFromCookie = _httpContextAccessor.GetRefreshToken();
+        string? refreshTokenFromRedis = await _redisCacheService.GetStringAsync(refreshTokenFromCookie);
+
+        if ( string.IsNullOrEmpty(refreshTokenFromRedis) || refreshTokenFromRedis != refreshTokenFromCookie)
+        {
+            throw new UnauthorizedCustomException(MessageException.InvalidRefreshToken);
+        }
+
+        Guid userId = _httpContextAccessor.GetUserId();
+        IEnumerable<Claim> payload = _httpContextAccessor.GetPayload();
+        string accessToken = _jsonWebTokenService.GenerateAccessToken(payload);
+        string refreshToken = _jsonWebTokenService.GenerateRefreshToken();
+
+        await _redisCacheService.SetStringAsync($"refresh_token:{userId}", refreshToken, TimeSpan.FromDays(30));
+
+        return new LoginCommandResult
+        {
+            AccessToken = accessToken
+        };
     }
 }

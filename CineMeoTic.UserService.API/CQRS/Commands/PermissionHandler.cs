@@ -2,7 +2,7 @@
 using CineMeoTic.UserService.API.Services.Intefaces;
 using MediatR;
 
-namespace CineMeoTic.UserService.API.CQRS.Commands;
+namespace CineMeoTic.UserService.API.Models.Commands;
 
 public sealed class PermissionHandler(IPermissionService permissionService) : IRequestHandler<CreatePermissionCommand, Unit>,
     IRequestHandler<CreatePermissionsCommand, Unit>

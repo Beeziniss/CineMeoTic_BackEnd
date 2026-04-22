@@ -22,4 +22,9 @@ public sealed class AuthenticationHandler(IAuthenticationService authenticationS
     {
         return await _authenticationService.LoginAsync(loginCommand, cancellationToken);
     }
+
+    public async Task<LoginCommandResult> Handle(NoArgumentCommand _)
+    {
+        return await _authenticationService.RefreshTokenAsync();
+    }
 }
