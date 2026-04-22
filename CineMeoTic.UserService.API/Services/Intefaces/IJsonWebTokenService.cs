@@ -1,6 +1,6 @@
 ﻿using System.Security.Claims;
 
-namespace CineMeoTic.UserService.API.Services;
+namespace CineMeoTic.UserService.API.Services.Intefaces;
 
 public interface IJsonWebTokenService
 {

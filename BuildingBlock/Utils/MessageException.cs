@@ -3,12 +3,16 @@
 public static class MessageException
 {
     #region Required
+    public const string FieldRequired = "At least one field must be provided.";
     public const string DisplayNameRequired = "DisplayName is required.";
     public const string NameRequired = "Name is required.";
     public const string EmailRequired = "Email is required.";
     public const string PasswordRequired = "Password is required.";
     public const string RoleRequired = "Role is required.";
     public const string PermissionRequired = "Permission is required.";
+    public const string CurrentPasswordRequired = "Current password is required.";
+    public const string NewPasswordRequired = "New password is required.";  
+    public const string ConfirmPasswordRequired = "Confirm password is required.";
     #endregion
 
     #region Invalid Format
@@ -16,6 +20,8 @@ public static class MessageException
     public const string InvalidEmailFormat = "Invalid email format.";
     public const string InvalidPasswordFormat = "Password must contain at least one lowercase letter, one uppercase letter, one digit, and be at least 6 characters long.";
     public const string InvalidPermissionFormat = "Permission name must be in the format of uppercase letters and dots.";
+    public const string InvalidGenderFormat = "Invalid gender format.";
+    public const string InvalidAvatarFormat = "Invalid avatar format.";
     #endregion
 
     #region Length Constraints
@@ -36,10 +42,12 @@ public static class MessageException
     public const string PermissionNotFound = "Permission not found.";
     public static string PermissionNotFoundMethod(string permissionName) => $"Permission {permissionName} not found";
     public const string RefreshTokenNotFound = "Refresh token not found.";
+    public const string InvalidOtp = "Invalid OTP code.";
     #endregion
 
     public const string UnAuthenticated = "Unauthenticated access.";
     public const string Unauthorized = "Unauthorized access.";
     public const string Forbidden = "Forbidden access.";
     public const string InvalidRefreshToken = "Invalid refresh token.";
+    public const string ConfirmPasswordMustMatchNewPassword = "Confirm password must match new password.";
 }

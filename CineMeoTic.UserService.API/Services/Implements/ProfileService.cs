@@ -2,6 +2,7 @@
 using BuildingBlocks.Utils;
 using CineMeoTic.UserService.API.Data;
 using CineMeoTic.UserService.API.Models;
+using CineMeoTic.UserService.API.Models.Commands;
 using CineMeoTic.UserService.API.Models.Queries;
 using CineMeoTic.UserService.API.Services.Intefaces;
 using Mapster;
@@ -42,5 +43,49 @@ public sealed class ProfileService(IUserDbContext userDbContext, IHttpContextAcc
         };
 
         return userInfoQueryResult;
+    }
+
+    private async Task CheckUserExistAsync(Guid userId, CancellationToken cancellationToken)
+    {
+        bool userExist = await _userDbContext.User
+            .AnyAsync(u => u.Id == userId, cancellationToken);
+
+        if (!userExist)
+        {
+            throw new BadRequestCustomException(MessageException.UserNotFound);
+        }
+    }
+    public async Task UpdateProfileAsync(UpdateUserProfileCommand command, CancellationToken cancellationToken)
+    {
+        Guid userId = _httpContextAccessor.GetUserId();
+
+        await CheckUserExistAsync(userId, cancellationToken);
+
+        await _userDbContext.User
+            .Where(u => u.Id == userId)
+            .ExecuteUpdateAsync(updates =>
+            {
+                if(command.DisplayName is not null)
+                {
+                    updates.SetProperty(u => u.DisplayName, command.DisplayName);
+                }
+
+                if(command.Gender.HasValue)
+                {
+                    updates.SetProperty(u => u.Gender, command.Gender.Value);
+                }
+
+                if(command.PhoneNumber is not null)
+                {
+                    updates.SetProperty(u => u.PhoneNumber, command.PhoneNumber);
+                }
+
+                if(command.Avatar is not null)
+                {
+                    updates.SetProperty(u => u.Avatar, command.Avatar);
+                }
+
+                updates.SetProperty(u => u.UpdatedAt, CustomTimeProvider.GetUtcPlus7TimeOffset());
+            }, cancellationToken);
     }
 }

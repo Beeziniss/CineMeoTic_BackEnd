@@ -12,7 +12,10 @@ public static class CustomTimeProvider
 
     public static DateTimeOffset GetUtcPlus7TimeOffset()
     {
-        return DateTimeOffset.UtcNow.ToOffset(TimeSpan.FromHours(7));
+        return UtcNow.AddHours(7);
+
+        // Neon (Database Service) doesn't support others timezones than UTC Now (+0)
+        //return DateTimeOffset.UtcNow.ToOffset(TimeSpan.FromHours(7));
     }
 
     public static DateOnly GetUtcPlus7DateOnly()

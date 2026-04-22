@@ -4,15 +4,12 @@ using FluentValidation;
 
 namespace CineMeoTic.UserService.API.Models.Validations;
 
-public sealed class LoginCommandValidator : AbstractValidator<LoginCommand>
+public sealed class ForgotPasswordCommandValidator : AbstractValidator<ForgotPasswordCommand>
 {
-    public LoginCommandValidator()
+    public ForgotPasswordCommandValidator()
     {
         RuleFor(x => x.Email)
             .NotEmpty().WithMessage(MessageException.EmailRequired)
             .EmailAddress().WithMessage(MessageException.InvalidEmailFormat);
-
-        RuleFor(x => x.Password)
-            .NotEmpty().WithMessage(MessageException.PasswordRequired);
     }
 }

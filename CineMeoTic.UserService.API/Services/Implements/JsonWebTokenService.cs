@@ -1,10 +1,11 @@
-﻿using Microsoft.IdentityModel.Tokens;
+﻿using CineMeoTic.UserService.API.Services.Intefaces;
+using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Security.Cryptography;
 using System.Text;
 
-namespace CineMeoTic.UserService.API.Services;
+namespace CineMeoTic.UserService.API.Services.Implements;
 
 public class JsonWebTokenService : IJsonWebTokenService
 {

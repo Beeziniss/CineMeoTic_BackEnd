@@ -3,7 +3,7 @@ using CineMeoTic.UserService.API.Data.Enums;
 
 namespace CineMeoTic.UserService.API.Data;
 
-public sealed class User : Auditable
+public sealed class User : Auditable, IEntity
 {
     public Guid Id { get; set; }
 

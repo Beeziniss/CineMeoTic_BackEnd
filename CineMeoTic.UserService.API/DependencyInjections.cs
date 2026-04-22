@@ -11,9 +11,7 @@ using FluentValidation;
 using Mapster;
 using MapsterMapper;
 using MediatR;
-using Microsoft.AspNetCore.Authentication.Google;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi;
@@ -103,6 +101,7 @@ public static class DependencyInjections
         services.AddSingleton<ICarterModule, PermissionEndpoint>();
         services.AddSingleton<ICarterModule, RoleEndpoint>();
         services.AddSingleton<ICarterModule, ProfileEndpoint>();
+        services.AddSingleton<ICarterModule, UserEndpoint>();
         services.AddCarter();
     }
 
@@ -126,6 +125,10 @@ public static class DependencyInjections
         services.AddScoped<IPermissionService, PermissionService>();
         services.AddScoped<IJsonWebTokenService, JsonWebTokenService>();
         services.AddScoped<IProfileService, ProfileService>();
+        services.AddScoped<IUserService, Services.Implements.UserService>();
+        services.AddScoped<IEmailService, EmailService>();
+        services.AddSingleton<IBackgroundJobQueue, BackgroundJobQueue>();
+        services.AddHostedService<BackgroundWorker>();
     }
 
     public static void MapsterExtension(this IServiceCollection services)

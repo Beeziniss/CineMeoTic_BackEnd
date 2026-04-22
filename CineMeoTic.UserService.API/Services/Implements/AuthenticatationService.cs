@@ -1,5 +1,5 @@
 ﻿using BuildingBlocks.Exceptions;
-using BuildingBlocks.Exceptions.Handler;
+using BuildingBlocks.Models;
 using BuildingBlocks.Utils;
 using CineMeoTic.UserService.API.Data;
 using CineMeoTic.UserService.API.Models;
@@ -8,15 +8,18 @@ using CineMeoTic.UserService.API.Services.Intefaces;
 using Mapster;
 using Microsoft.EntityFrameworkCore;
 using System.Security.Claims;
+using System.Text;
 
 namespace CineMeoTic.UserService.API.Services.Implements;
 
-public sealed class AuthenticatationService(IHttpContextAccessor httpContextAccessor, IUserDbContext userDbContext, IJsonWebTokenService jsonWebTokenService, IRedisCacheService redisCacheService) : IAuthenticationService
+public sealed class AuthenticatationService(IHttpContextAccessor httpContextAccessor, IUserDbContext userDbContext, IJsonWebTokenService jsonWebTokenService, IEmailService emailService, IRedisCacheService redisCacheService, IBackgroundJobQueue backgroundJobQueue) : IAuthenticationService
 {
     private readonly IHttpContextAccessor _httpContextAccessor = httpContextAccessor;
     private readonly IUserDbContext _userDbContext = userDbContext;
     private readonly IJsonWebTokenService _jsonWebTokenService = jsonWebTokenService;
+    private readonly IEmailService _emailService = emailService;
     private readonly IRedisCacheService _redisCacheService = redisCacheService;
+    private readonly IBackgroundJobQueue _backgroundJobQueue = backgroundJobQueue;
 
     private static async Task CheckEmailExistAsync(IUserDbContext userDbContext, string email, CancellationToken cancellationToken)
     {
@@ -26,9 +29,12 @@ public sealed class AuthenticatationService(IHttpContextAccessor httpContextAcce
             throw new BadRequestCustomException(MessageException.EmailAlreadyExists);
         }
     }
-    private static bool VerifyPassword(string password, string passwordHash)
+    private static void VerifyPassword(string password, string passwordHash)
     {
-        return BCrypt.Net.BCrypt.Verify(password, passwordHash);
+        if (!BCrypt.Net.BCrypt.Verify(password, passwordHash))
+        {
+            throw new BadRequestCustomException(MessageException.InvalidCredential);
+        }
     }
     public async Task<LoginCommandResult> LoginAsync(LoginCommand command, CancellationToken cancellationToken)
     {
@@ -41,10 +47,7 @@ public sealed class AuthenticatationService(IHttpContextAccessor httpContextAcce
             .FirstOrDefaultAsync(cancellationToken)
            ?? throw new BadRequestCustomException(MessageException.UserNotFound);
 
-        if (!VerifyPassword(command.Password, userAuthInfoResponse.PasswordHash))
-        {
-            throw new BadRequestCustomException(MessageException.InvalidCredential);
-        }
+        VerifyPassword(command.Password, userAuthInfoResponse.PasswordHash);
 
         List<Claim> claims =
         [
@@ -145,5 +148,81 @@ public sealed class AuthenticatationService(IHttpContextAccessor httpContextAcce
         {
             AccessToken = accessToken
         };
+    }
+
+    public async Task ChangePasswordAsync(ChangePasswordCommand command, CancellationToken cancellationToken)
+    {
+        Guid userId = _httpContextAccessor.GetUserId();
+        string passwordHash = await _userDbContext.User
+            .Where(u => u.Id == userId)
+            .Select(x => x.PasswordHash)
+            .FirstOrDefaultAsync(cancellationToken) ?? throw new NotFoundCustomException(MessageException.UserNotFound);
+
+        VerifyPassword(command.CurrentPassword, passwordHash);
+        string newPasswordHash = BCrypt.Net.BCrypt.HashPassword(command.NewPassword);
+
+        await _userDbContext.User
+            .Where(u => u.Id == userId)
+            .ExecuteUpdateAsync(u => u
+                .SetProperty(x => x.PasswordHash, newPasswordHash)
+                .SetProperty(x => x.UpdatedAt, CustomTimeProvider.GetUtcPlus7TimeOffset())
+                , cancellationToken);
+    }
+
+    private static async Task<string> GenerateOtp()
+    {
+        const string digits = "0123456789";
+        Random random = new();
+        StringBuilder otp = new(6);
+
+        for (int i = 0; i < 6; i++)
+        {
+            otp.Append(digits[random.Next(digits.Length)]);
+        }
+
+        return otp.ToString();
+    }
+    public async Task ForgotPasswordAsync(ForgotPasswordCommand command, CancellationToken cancellationToken)
+    {
+        string normalizeEmail = command.Email.NormalizeLower();
+
+        string otp = await GenerateOtp();
+        string otpRedisKey = $"forgot_password_otp:{normalizeEmail}";
+
+        await _redisCacheService.SetStringAsync(otpRedisKey, otp, TimeSpan.FromMinutes(10));
+
+        _backgroundJobQueue.Enqueue(async ct =>
+        {
+            _emailService.Send(EmailTemplateType.ForgotPassword, normalizeEmail, otp);
+            await Task.CompletedTask;
+        });
+    }
+    private async Task VerifyOtpAsync(string normalizeEmail, string otp)
+    {
+        
+        string otpFromRedis = await _redisCacheService.GetStringAsync($"forgot_password_otp:{normalizeEmail}") ?? throw new BadRequestCustomException(MessageException.InvalidOtp);
+
+        if (!string.Equals(otpFromRedis, otp, StringComparison.Ordinal))
+        {
+            throw new BadRequestCustomException(MessageException.InvalidOtp);
+        }
+    }
+    public async Task ResetPasswordAsync(ResetPasswordCommand command, CancellationToken cancellationToken)
+    {
+        string normalizeEmail = command.Email.NormalizeLower();
+        await VerifyOtpAsync(normalizeEmail, command.Otp);
+
+        User user = await _userDbContext.User
+            .FirstOrDefaultAsync(u => u.Email == normalizeEmail, cancellationToken)
+            ?? throw new BadRequestCustomException(MessageException.UserNotFound);
+
+        string newPasswordHash = BCrypt.Net.BCrypt.HashPassword(command.NewPassword);
+
+        await _userDbContext.User
+            .Where(u => u.Id == user.Id)
+            .ExecuteUpdateAsync(u => u
+                .SetProperty(x => x.PasswordHash, newPasswordHash)
+                .SetProperty(x => x.UpdatedAt, CustomTimeProvider.GetUtcPlus7TimeOffset())
+                , cancellationToken);
     }
 }

@@ -2,7 +2,7 @@
 
 namespace CineMeoTic.UserService.API.Data;
 
-public sealed class Permission : Auditable
+public sealed class Permission : Auditable, IEntity
 {
     public Guid Id { get; set; }
     public string Name { get; set; } = null!;
