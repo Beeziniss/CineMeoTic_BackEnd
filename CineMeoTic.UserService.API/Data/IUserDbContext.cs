@@ -12,4 +12,5 @@ public interface IUserDbContext
     public DbSet<RolePermission> RolePermission { get; }
 
     Task<int> SaveChangesAsync(CancellationToken cancellationToken);
+    Task ExecuteInTransactionAsync(Func<Task> action, CancellationToken cancellationToken);
 }

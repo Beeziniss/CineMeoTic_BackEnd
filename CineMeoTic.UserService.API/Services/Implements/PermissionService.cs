@@ -13,7 +13,7 @@ public sealed class PermissionService(IUserDbContext userDbContext) : IPermissio
 
     private async Task CheckPermissionExistAsync(string permissionName, CancellationToken cancellationToken)
     {
-        bool permissionExist = await _userDbContext.Permission.AsNoTracking().AnyAsync(p => p.Name == permissionName, cancellationToken);
+        bool permissionExist = await _userDbContext.Permission.AnyAsync(p => p.Name == permissionName, cancellationToken);
         if (permissionExist)
         {
             throw new BadRequestCustomException(MessageException.PermissionAlreadyExists);
@@ -21,7 +21,7 @@ public sealed class PermissionService(IUserDbContext userDbContext) : IPermissio
     }
     private async Task CheckPermissionsExistAsync(IEnumerable<string> permissionNames, CancellationToken cancellationToken)
     {
-        bool permissionExists = await _userDbContext.Permission.AsNoTracking().AnyAsync(p => permissionNames.Contains(p.Name), cancellationToken);
+        bool permissionExists = await _userDbContext.Permission.AnyAsync(p => permissionNames.Contains(p.Name), cancellationToken);
         if (permissionExists)
         {
             throw new BadRequestCustomException(MessageException.PermissionsAlreadyExist);

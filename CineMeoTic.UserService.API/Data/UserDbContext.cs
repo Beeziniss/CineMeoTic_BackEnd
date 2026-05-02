@@ -1,6 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
-using System.Linq.Expressions;
-using System.Security.Principal;
+using Microsoft.EntityFrameworkCore.Storage;
 
 namespace CineMeoTic.UserService.API.Data;
 
@@ -11,6 +10,27 @@ public partial class UserDbContext(DbContextOptions<UserDbContext> options) : Db
     public virtual DbSet<Permission> Permission { get; set; }
     public virtual DbSet<UserRole> UserRole { get; set; }
     public virtual DbSet<RolePermission> RolePermission { get; set; }
+
+    public async Task ExecuteInTransactionAsync(Func<Task> action, CancellationToken cancellationToken)
+    {
+        if (Database.CurrentTransaction is not null)
+        {
+            await action();
+            return;
+        }
+
+        await using IDbContextTransaction transaction = await Database.BeginTransactionAsync(cancellationToken);
+        try
+        {
+            await action();
+            await transaction.CommitAsync(cancellationToken);
+        }
+        catch
+        {
+            await transaction.RollbackAsync(cancellationToken);
+            throw;
+        }
+    }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {

@@ -41,7 +41,6 @@ public sealed class AuthenticatationService(IHttpContextAccessor httpContextAcce
         string normalizedEmail = command.Email.NormalizeLower();
 
         UserAuthInfoResponse userAuthInfoResponse = await _userDbContext.User
-            .AsNoTracking()
             .Where(u => u.Email == normalizedEmail)
             .ProjectToType<UserAuthInfoResponse>()
             .FirstOrDefaultAsync(cancellationToken)
@@ -55,14 +54,12 @@ public sealed class AuthenticatationService(IHttpContextAccessor httpContextAcce
         ];
 
         IReadOnlyCollection<Guid> roleIds = await _userDbContext.UserRole
-            .AsNoTracking()
             .Where(ur => ur.UserId == userAuthInfoResponse.Id)
             .Select(ur => ur.RoleId)
             .Distinct()
             .ToListAsync(cancellationToken);
 
         IReadOnlyCollection<string> roleNames = await _userDbContext.Role
-            .AsNoTracking()
             .Where(r => roleIds.Contains(r.Id))
             .Select(r => r.Name)
             .Distinct()
@@ -101,7 +98,7 @@ public sealed class AuthenticatationService(IHttpContextAccessor httpContextAcce
     {
         await CheckEmailExistAsync(_userDbContext, registerCommand.Email, cancellationToken);
 
-        Role viewerRole = await _userDbContext.Role.AsNoTracking().FirstOrDefaultAsync(r => r.Name == "Viewer", cancellationToken) ?? throw new NotFoundCustomException(MessageException.ViewerNotFound);
+        Role viewerRole = await _userDbContext.Role.FirstOrDefaultAsync(r => r.Name == "Viewer", cancellationToken) ?? throw new NotFoundCustomException(MessageException.ViewerNotFound);
 
         User user = new()
         {
@@ -119,10 +116,13 @@ public sealed class AuthenticatationService(IHttpContextAccessor httpContextAcce
             RoleId = viewerRole.Id,
         };
 
-        _userDbContext.User.Add(user);
-        _userDbContext.UserRole.Add(userRole);
+        await _userDbContext.ExecuteInTransactionAsync(async () =>
+        {
+            _userDbContext.User.Add(user);
+            _userDbContext.UserRole.Add(userRole);
 
-        await _userDbContext.SaveChangesAsync(cancellationToken);
+            await _userDbContext.SaveChangesAsync(cancellationToken);
+        }, cancellationToken);
 
         return;
     }
@@ -132,7 +132,7 @@ public sealed class AuthenticatationService(IHttpContextAccessor httpContextAcce
         string refreshTokenFromCookie = _httpContextAccessor.GetRefreshToken();
         string? refreshTokenFromRedis = await _redisCacheService.GetStringAsync(refreshTokenFromCookie);
 
-        if ( string.IsNullOrEmpty(refreshTokenFromRedis) || refreshTokenFromRedis != refreshTokenFromCookie)
+        if (string.IsNullOrEmpty(refreshTokenFromRedis) || refreshTokenFromRedis != refreshTokenFromCookie)
         {
             throw new UnauthorizedCustomException(MessageException.InvalidRefreshToken);
         }
@@ -199,7 +199,7 @@ public sealed class AuthenticatationService(IHttpContextAccessor httpContextAcce
     }
     private async Task VerifyOtpAsync(string normalizeEmail, string otp)
     {
-        
+
         string otpFromRedis = await _redisCacheService.GetStringAsync($"forgot_password_otp:{normalizeEmail}") ?? throw new BadRequestCustomException(MessageException.InvalidOtp);
 
         if (!string.Equals(otpFromRedis, otp, StringComparison.Ordinal))

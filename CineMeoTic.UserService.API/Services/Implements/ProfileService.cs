@@ -20,14 +20,12 @@ public sealed class ProfileService(IUserDbContext userDbContext, IHttpContextAcc
         Guid userId = _httpContextAccessor.GetUserId();
 
         UserInfoResponse userInfoResponse = await _userDbContext.User
-            .AsNoTracking()
             .Where(u => u.Id == userId)
             .ProjectToType<UserInfoResponse>()
             .FirstOrDefaultAsync(cancellationToken)
             ?? throw new BadRequestCustomException(MessageException.UserNotFound);
 
         IReadOnlyCollection<string> roleNames = await _userDbContext.UserRole
-            .AsNoTracking()
             .Where(ur => ur.UserId == userInfoResponse.Id)
             .Join(
                 _userDbContext.Role.AsNoTracking(),
