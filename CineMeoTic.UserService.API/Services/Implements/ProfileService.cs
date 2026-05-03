@@ -7,6 +7,7 @@ using CineMeoTic.UserService.API.Models.Queries;
 using CineMeoTic.UserService.API.Services.Intefaces;
 using Mapster;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.ChangeTracking;
 
 namespace CineMeoTic.UserService.API.Services.Implements;
 
@@ -59,31 +60,39 @@ public sealed class ProfileService(IUserDbContext userDbContext, IHttpContextAcc
 
         await CheckUserExistAsync(userId, cancellationToken);
 
-        await _userDbContext.User
-            .Where(u => u.Id == userId)
-            .ExecuteUpdateAsync(updates =>
-            {
-                if(command.DisplayName is not null)
-                {
-                    updates.SetProperty(u => u.DisplayName, command.DisplayName);
-                }
+        User user = new()
+        {
+            Id = userId
+        };
+        _userDbContext.User.Attach(user);
 
-                if(command.Gender.HasValue)
-                {
-                    updates.SetProperty(u => u.Gender, command.Gender.Value);
-                }
+        EntityEntry<User> entry = _userDbContext.Entry(user);
 
-                if(command.PhoneNumber is not null)
-                {
-                    updates.SetProperty(u => u.PhoneNumber, command.PhoneNumber);
-                }
+        if (command.DisplayName is not null)
+        {
+            user.DisplayName = command.DisplayName;
+            entry.Property(u => u.DisplayName).IsModified = true;
+        }
 
-                if(command.Avatar is not null)
-                {
-                    updates.SetProperty(u => u.Avatar, command.Avatar);
-                }
+        if (command.Gender.HasValue)
+        {
+            user.Gender = command.Gender.Value;
+            entry.Property(u => u.Gender).IsModified = true;
+        }
 
-                updates.SetProperty(u => u.UpdatedAt, CustomTimeProvider.GetUtcPlus7TimeOffset());
-            }, cancellationToken);
+        if (command.PhoneNumber is not null)
+        {
+            user.PhoneNumber = command.PhoneNumber;
+            entry.Property(u => u.PhoneNumber).IsModified = true;
+        }
+
+        if (command.Avatar is not null)
+        {
+            user.Avatar = command.Avatar;
+            entry.Property(u => u.Avatar).IsModified = true;
+        }
+
+        user.UpdatedAt = CustomTimeProvider.GetUtcPlus7TimeOffset();
+        entry.Property(u => u.UpdatedAt).IsModified = true;
     }
 }

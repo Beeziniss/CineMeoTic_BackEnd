@@ -21,7 +21,7 @@ public sealed class ProfileEndpoint : ICarterModule
         .WithSummary("Get User Profile")
         .WithDescription("Get User Profile");
 
-        app.MapPut("api/profiles/me", async (UpdateUserProfileCommand command, ISender sender) =>
+        app.MapPatch("api/profiles/me", async (UpdateUserProfileCommand command, ISender sender) =>
             {
                 await sender.Send(command);
                 return Results.Ok();

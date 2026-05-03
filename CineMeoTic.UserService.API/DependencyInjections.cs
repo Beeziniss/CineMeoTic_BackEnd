@@ -2,6 +2,7 @@
 using BuildingBlocks.Exceptions;
 using BuildingBlocks.Exceptions.Handler;
 using Carter;
+using CineMeoTic.UserService.API.CQRS.Behaviors;
 using CineMeoTic.UserService.API.Data;
 using CineMeoTic.UserService.API.Endpoints;
 using CineMeoTic.UserService.API.Services;
@@ -116,6 +117,7 @@ public static class DependencyInjections
 
         services.AddScoped(typeof(IPipelineBehavior<,>), typeof(LoggingBehavior<,>));
         services.AddScoped(typeof(IPipelineBehavior<,>), typeof(ValidationBehavior<,>));
+        services.AddScoped(typeof(IPipelineBehavior<,>), typeof(TransactionBehavior<,>));
     }
 
     public static void AddServices(this IServiceCollection services)

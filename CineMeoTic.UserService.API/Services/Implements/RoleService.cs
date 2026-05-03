@@ -42,12 +42,7 @@ public sealed class RoleService(IUserDbContext userDbContext) : IRoleService
             })
             .ToList();
 
-        await _userDbContext.ExecuteInTransactionAsync(async () =>
-        {
-            _userDbContext.Role.Add(role);
-            _userDbContext.RolePermission.AddRange(rolePermissions);
-
-            await _userDbContext.SaveChangesAsync(cancellationToken);
-        }, cancellationToken);
+        _userDbContext.Role.Add(role);
+        _userDbContext.RolePermission.AddRange(rolePermissions);
     }
 }

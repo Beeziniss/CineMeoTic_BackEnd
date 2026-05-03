@@ -24,7 +24,7 @@ public sealed class AuthenticatationService(IHttpContextAccessor httpContextAcce
     private static async Task CheckEmailExistAsync(IUserDbContext userDbContext, string email, CancellationToken cancellationToken)
     {
         string normalizeEmail = email.NormalizeLower();
-        if (await userDbContext.User.AsNoTracking().AnyAsync(u => u.Email == normalizeEmail, cancellationToken))
+        if (await userDbContext.User.AnyAsync(u => u.Email == normalizeEmail, cancellationToken))
         {
             throw new BadRequestCustomException(MessageException.EmailAlreadyExists);
         }
@@ -116,15 +116,8 @@ public sealed class AuthenticatationService(IHttpContextAccessor httpContextAcce
             RoleId = viewerRole.Id,
         };
 
-        await _userDbContext.ExecuteInTransactionAsync(async () =>
-        {
-            _userDbContext.User.Add(user);
-            _userDbContext.UserRole.Add(userRole);
-
-            await _userDbContext.SaveChangesAsync(cancellationToken);
-        }, cancellationToken);
-
-        return;
+        _userDbContext.User.Add(user);
+        _userDbContext.UserRole.Add(userRole);
     }
 
     public async Task<LoginCommandResult> RefreshTokenAsync()

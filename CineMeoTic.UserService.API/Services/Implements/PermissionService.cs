@@ -37,7 +37,6 @@ public sealed class PermissionService(IUserDbContext userDbContext) : IPermissio
         };
 
         _userDbContext.Permission.Add(permission);
-        await _userDbContext.SaveChangesAsync(cancellationToken);
     }
     public async Task CreatePermissionsAsync(CreatePermissionsCommand createPermissionsCommand, CancellationToken cancellationToken)
     {
@@ -55,6 +54,5 @@ public sealed class PermissionService(IUserDbContext userDbContext) : IPermissio
         }
 
         _userDbContext.Permission.AddRange(permissions);
-        await _userDbContext.SaveChangesAsync(cancellationToken);
     }
 }

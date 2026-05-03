@@ -24,8 +24,6 @@ public sealed class UserService(IUserDbContext userDbContext) : IUserService
     {
         await CheckUserExistAsync(userId, cancellationToken);
 
-        await _userDbContext.User
-            .Where(u => u.Id == userId)
-            .ExecuteDeleteAsync(cancellationToken);
+        _userDbContext.User.Remove(new User { Id = userId });
     }
 }
